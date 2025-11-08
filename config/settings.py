@@ -55,13 +55,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+
+    # Cloudinary must come BEFORE staticfiles
+    'cloudinary_storage',
+    'cloudinary',
+
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
 
     # Third-party apps
-    'cloudinary_storage',
-    'cloudinary',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
