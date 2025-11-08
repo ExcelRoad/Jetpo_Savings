@@ -11,12 +11,15 @@ from core.views import (
     agents_landing_view
 )
 from core.admin_utils import (
-    admin_dashboard, promote_to_superuser, sync_gemelnet, initial_setup
+    admin_dashboard, promote_to_superuser, sync_gemelnet, initial_setup, check_config
 )
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+
+    # Diagnostic
+    path('check-config/', check_config, name='check_config'),
 
     # Initial Setup (ONE-TIME - remove after first superuser is created)
     path('initial-setup/', initial_setup, name='initial_setup'),

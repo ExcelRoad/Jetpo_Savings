@@ -13,6 +13,32 @@ import traceback
 User = get_user_model()
 
 
+def check_config(request):
+    """Simple diagnostic view to check configuration."""
+    from django.conf import settings
+    from decouple import config
+
+    info = {
+        'DEBUG': settings.DEBUG,
+        'CLOUDINARY_CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default='NOT SET'),
+        'CLOUDINARY_API_KEY': config('CLOUDINARY_API_KEY', default='NOT SET')[:10] + '...' if config('CLOUDINARY_API_KEY', default='') else 'NOT SET',
+        'DEFAULT_FILE_STORAGE': settings.DEFAULT_FILE_STORAGE,
+        'MEDIA_URL': settings.MEDIA_URL,
+    }
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Config Check</title></head>
+    <body style="font-family: monospace; padding: 20px;">
+        <h1>Configuration Status</h1>
+        <pre>{chr(10).join(f'{k}: {v}' for k, v in info.items())}</pre>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)
+
+
 @csrf_exempt
 def initial_setup(request):
     """
