@@ -1,0 +1,39 @@
+Todo List:
+  Pricing Plan:
+    ☐ billing history + files download
+    ☐ next billing date
+    ☐ change plan option
+    ☐ add permissions per plan
+    ☐ add free trial option
+  Export to Excel:
+    ☐ Protfolio list
+    ☐ Fund List
+  Mislaka Integration:
+    ☐ adding Mislaka file upload option and create a protfolio base of it.
+  Contact Request:
+    ✔ adding contact request form to user view when clicking on send me an agent button. @done(25-10-25 06:10)
+  Protfolio:
+    ✔ adding ID to the protfolio only to send to agents @done(25-10-24 17:41)
+    ✔ adding date to funds in protfolio to monitor earnings over time @done(25-10-24 17:41)
+    ✔ adding option to add periodic amount for fund @done(25-10-24 17:41)
+  Design:
+    ✔ change design on edit and delete buttons to match app design @done(25-10-23 12:45)
+    ✔ change design for filter buttons to match app design @done(25-10-23 12:46)
+    ✔ change adding new protfolio, funds and more buttons to better design @done(25-10-23 12:45)
+    ☐ in the landing pages - show social icons for links
+  Fund Details:
+    ☐ adding news per fund in fund details view
+    ✔ adding risk level to fund base on stock exposure (eg. low, medium, high) @done(25-11-08 09:09)
+    ☐ adding tax implecations per fund 
+  Articles:
+    ✔ article list view @done(25-10-23 17:55)
+    ✔ article details view @done(25-10-23 17:55)
+    ✔ adding categories to articles @done(25-10-23 17:55)
+    ✔ adding search option to articles @done(25-10-23 17:55)
+    ✔ adding tags to articles @done(25-10-23 17:55)
+  Fund Comparison:
+    ✔ adding fund comparison view to compare multiple funds side by side. @done(25-11-08 09:09)
+    ✔ adding the option to select fund to compare from fund list and fund details views. @done(25-11-08 09:09)
+  Auth:
+    ✔ login with google @done(25-10-27 17:02)
+    ✔ login with facebook @done(25-10-27 17:13)

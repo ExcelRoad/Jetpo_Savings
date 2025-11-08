@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}התחברות - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color-wobg.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+        <div>
+            <h2 class="text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
+                התחבר לחשבון שלך
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                או
+                <a href="{% url 'account_signup' %}" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">
+                    צור חשבון חדש
+                </a>
+            </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+            <form method="POST" action="{% url 'account_login' %}" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_login" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        כתובת אימייל
+                    </label>
+                    <input type="email" name="login" id="id_login" required
+                           class="input"
+                           placeholder="email@example.com">
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        סיסמה
+                    </label>
+                    <input type="password" name="password" id="id_password" required
+                           class="input"
+                           placeholder="••••••••">
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="text-sm">
+                        <a href="{% url 'account_reset_password' %}" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">
+                            שכחת את הסיסמה?
+                        </a>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label for="id_remember" class="mr-2 block text-sm text-gray-900 dark:text-gray-100">
+                            זכור אותי
+                        </label>
+                        <input id="id_remember" name="remember" type="checkbox"
+                               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                    </div>
+                </div>
+
+                {% if form.errors %}
+                <div class="rounded-md bg-red-50 dark:bg-red-900 p-4">
+                    <div class="text-sm text-red-800 dark:text-red-200">
+                        אנא תקן את השגיאות למטה.
+                    </div>
+                </div>
+                {% endif %}
+
+                <div>
+                    <button type="submit" class="w-full btn btn-primary py-3">
+                        התחבר
+                    </button>
+                </div>
+            </form>
+
+            <!-- Social Login Buttons -->
+            {% include "socialaccount/snippets/provider_list.html" %}
+        </div>
+
+        <!-- Back to Landing Page -->
+        <div class="text-center flex items-center justify-center">
+            <a href="{% url 'landing' %}" class="btn btn-secondary">
+                חזרה לדף הבית
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

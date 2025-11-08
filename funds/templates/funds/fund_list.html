@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}עיון בקרנות - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">עיון בקרנות נאמנות</h1>
+        <p class="text-gray-600 dark:text-gray-400">חפש וסנן מעל 800 קרנות נאמנות ישראליות</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 mb-6">
+        <form method="get" class="space-y-4">
+            <!-- Top Row: Search, Company, Category -->
+            <div class="grid md:grid-cols-3 gap-4">
+                <!-- Search -->
+                <div>
+                    <input type="text" name="search" value="{{ search_query }}"
+                           placeholder="חיפוש לפי שם קרן או חברה..."
+                           class="input">
+                </div>
+
+                <!-- Company Filter -->
+                <div>
+                    <select name="company" class="input">
+                        <option value="">כל החברות</option>
+                        {% for company in all_companies %}
+                        <option value="{{ company.id }}" {% if company.id|stringformat:"s" == company_filter %}selected{% endif %}>{{ company.short_name|default:company.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <select name="category" class="input">
+                        <option value="">כל הקטגוריות</option>
+                        {% for category in all_categories %}
+                        <option value="{{ category }}" {% if category == category_filter %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Liked Filter and Buttons -->
+            <div class="flex items-center justify-between gap-4">
+                <!-- Liked Filter -->
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="liked" value="true" {% if liked_filter == 'true' %}checked{% endif %}
+                               onchange="this.form.submit()"
+                               class="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 dark:border-gray-600 rounded">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">מועדפים בלבד</span>
+                    </label>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        סנן
+                    </button>
+                    <a href="{% url 'fund_list' %}" class="btn btn-secondary">
+                        נקה
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count and Pagination Info -->
+    <div class="mb-4 flex justify-between items-center">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            נמצאו {{ page_obj.paginator.count|intcomma }} קרנות
+            {% if page_obj.paginator.num_pages > 1 %}
+            (עמוד {{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }})
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Funds Grid - 6 per row -->
+    {% if funds %}
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+        {% for fund in funds %}
+        <div class="card group hover:shadow-md transition-all relative p-4">
+            <!-- Like Button -->
+            <div class="absolute top-2 left-2">
+                <button onclick="toggleLike({{ fund.pk }}, this)" class="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    {% if fund.id in user_liked_fund_ids %}
+                    <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    {% else %}
+                    <svg class="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- Fund Info -->
+            <a href="{% url 'fund_detail' fund.pk %}" class="block mt-6">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1 line-clamp-2 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+                    {{ fund.name }}
+                </h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ fund.company.short_name|default:fund.company }}</p>
+                <div class="text-sm font-semibold {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                    {{ fund.return_rate }}%
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card text-center py-12">
+        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">לא נמצאו קרנות</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">נסה לשנות את הפילטרים או את החיפוש</p>
+        <a href="{% url 'fund_list' %}" class="btn btn-primary">
+            נקה פילטרים
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-12 flex justify-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if liked_filter %}&liked={{ liked_filter }}{% endif %}"
+           class="btn btn-secondary">
+            ראשון
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if liked_filter %}&liked={{ liked_filter }}{% endif %}"
+           class="btn btn-secondary">
+            קודם
+        </a>
+        {% endif %}
+
+        <span class="btn btn-secondary">
+            עמוד {{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if liked_filter %}&liked={{ liked_filter }}{% endif %}"
+           class="btn btn-secondary">
+            הבא
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if liked_filter %}&liked={{ liked_filter }}{% endif %}"
+           class="btn btn-secondary">
+            אחרון
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleLike(fundId, button) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/funds/${fundId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'next=fund_list'
+    })
+    .then(response => {
+        if (response.ok) {
+            // Toggle the heart icon
+            const svg = button.querySelector('svg');
+            const isLiked = svg.classList.contains('fill-current');
+
+            if (isLiked) {
+                // Unlike - change to outline
+                svg.outerHTML = `<svg class="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>`;
+            } else {
+                // Like - change to filled
+                svg.outerHTML = `<svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>`;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}

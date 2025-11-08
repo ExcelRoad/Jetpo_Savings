@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}הוסף לתיק - {{ fund.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'fund_detail' fund.pk %}" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">הוסף את {{ fund.name }} לתיקים</h1>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">בחר את התיקים שברצונך להוסף את הקרן אליהם</p>
+    </div>
+
+    <form method="post" id="portfolioSelectionForm">
+        {% csrf_token %}
+
+        <!-- Portfolios Grid -->
+        {% if portfolios %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {% for portfolio in portfolios %}
+            <div class="card relative p-4 transition-all duration-200 portfolio-card {% if portfolio.pk in existing_portfolio_ids %}opacity-50{% endif %}"
+                 data-portfolio-id="{{ portfolio.pk }}"
+                 onclick="togglePortfolioSelection({{ portfolio.pk }})"
+                 style="cursor: pointer;">
+
+                <input type="checkbox" name="selected_portfolios" value="{{ portfolio.pk }}"
+                       class="hidden portfolio-checkbox" id="portfolio-{{ portfolio.pk }}"
+                       {% if portfolio.pk in existing_portfolio_ids %}disabled{% endif %}>
+
+                <!-- Selection indicator -->
+                <div class="absolute top-2 left-2">
+                    <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 selection-indicator">
+                        <svg class="w-3 h-3 text-white hidden checkmark" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Already in portfolio indicator -->
+                {% if portfolio.pk in existing_portfolio_ids %}
+                <div class="absolute top-2 right-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">
+                    כבר בתיק
+                </div>
+                {% endif %}
+
+                <!-- Portfolio info -->
+                <div class="mt-6">
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ portfolio.name }}</h3>
+                    {% if portfolio.description %}
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ portfolio.description }}</p>
+                    {% endif %}
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ portfolio.created_at|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Selected count and continue button -->
+        <div class="sticky bottom-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-4 shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <span id="selectedCount">0</span> תיקים נבחרו
+                </div>
+                <button type="submit" class="btn btn-primary" id="continueBtn" disabled>
+                    המשך להוספת סכומים
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty state -->
+        <div class="card text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">אין לך תיקים עדיין</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">צור את התיק הראשון שלך כדי להתחיל להוסיף קרנות</p>
+            <a href="{% url 'portfolio_create' %}" class="btn btn-primary">
+                צור תיק ראשון
+            </a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+function togglePortfolioSelection(portfolioId) {
+    const card = document.querySelector(`[data-portfolio-id="${portfolioId}"]`);
+    const checkbox = document.getElementById(`portfolio-${portfolioId}`);
+
+    // Don't allow selection if disabled (already in portfolio)
+    if (checkbox.disabled) return;
+
+    checkbox.checked = !checkbox.checked;
+
+    const indicator = card.querySelector('.selection-indicator');
+    const checkmark = card.querySelector('.checkmark');
+
+    if (checkbox.checked) {
+        // Selected state
+        card.style.borderColor = 'rgb(96, 165, 250)';
+        card.style.borderWidth = '2px';
+        indicator.style.backgroundColor = 'rgb(96, 165, 250)';
+        indicator.style.borderColor = 'rgb(96, 165, 250)';
+        checkmark.classList.remove('hidden');
+    } else {
+        // Unselected state
+        card.style.borderColor = '';
+        card.style.borderWidth = '';
+        const isDark = document.documentElement.classList.contains('dark');
+        indicator.style.backgroundColor = isDark ? 'rgb(55, 65, 81)' : 'white';
+        indicator.style.borderColor = isDark ? 'rgb(75, 85, 99)' : 'rgb(209, 213, 219)';
+        checkmark.classList.add('hidden');
+    }
+
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.portfolio-checkbox:checked');
+    const count = checkboxes.length;
+    document.getElementById('selectedCount').textContent = count;
+
+    const continueBtn = document.getElementById('continueBtn');
+    if (count > 0) {
+        continueBtn.disabled = false;
+        continueBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        continueBtn.disabled = true;
+        continueBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

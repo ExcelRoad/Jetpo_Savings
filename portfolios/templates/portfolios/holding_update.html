@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}עדכון סכום - {{ holding.fund.name }} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">עדכון סכום השקעה</h1>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">תיק: {{ portfolio.name }}</p>
+    </div>
+
+    <!-- Fund Info Card -->
+    <div class="card mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">פרטי הקרן</h2>
+        <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-sm text-gray-600 dark:text-gray-400">שם הקרן</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ holding.fund.name }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-sm text-gray-600 dark:text-gray-400">חברה מנהלת</span>
+                <span class="text-sm text-gray-900 dark:text-gray-100">{{ holding.fund.company.short_name|default:holding.fund.company.name }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-sm text-gray-600 dark:text-gray-400">תשואה שנתית</span>
+                <span class="text-sm font-semibold {% if holding.fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                    {{ holding.fund.return_rate }}%
+                </span>
+            </div>
+            <div class="flex justify-between py-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">סכום נוכחי</span>
+                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">₪{{ holding.amount|floatformat:2|intcomma }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Form -->
+    <div class="card">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">עדכן פרטי השקעה</h2>
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Hidden fund field to preserve the value -->
+            <input type="hidden" name="fund" value="{{ holding.fund.id }}">
+
+            <div class="mb-6">
+                <label for="{{ form.amount.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">
+                    {{ form.amount.label }}
+                </label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.amount.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">הזן את הסכום החדש להשקעה בקרן זו</p>
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.purchase_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">
+                    {{ form.purchase_date.label }}
+                </label>
+                {{ form.purchase_date }}
+                {% if form.purchase_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.purchase_date.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">תאריך רכישת הקרן (לצורך חישוב רווח/הפסד)</p>
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    עדכן פרטים
+                </button>
+                <a href="{% url 'contribution_create' holding.pk %}" class="btn border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                    הוסף השקעה תקופתית
+                </a>
+                <a href="{% url 'portfolio_detail' portfolio.pk %}" class="btn btn-secondary">
+                    ביטול
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

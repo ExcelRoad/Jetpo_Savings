@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}התיקים שלי - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">התיקים שלי</h1>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400">נהל את תיקי ההשקעות שלך</p>
+        </div>
+        <a href="{% url 'portfolio_create' %}" class="btn btn-secondary">
+            + תיק חדש
+        </a>
+    </div>
+
+    {% if portfolios %}
+        <!-- Portfolios Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for portfolio in portfolios %}
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="card group hover:shadow-md transition-all">
+                <div class="mb-3">
+                    <h3 class="font-semibold text-gray-900 mb-1 group-hover:text-gray-700 dark:text-gray-100 dark:group-hover:text-gray-300 flex items-center gap-2">
+                        <img src="{% static portfolio.get_icon %}" alt="Portfolio Avatar" class="w-8 h-8 rounded-full object-cover">
+                        <span>{{ portfolio.name }}</span>
+                    </h3>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        {{ portfolio.owner_name }} • גיל {{ portfolio.age }}
+                    </div>
+                    {% if portfolio.description %}
+                    <p class="text-sm text-gray-600 line-clamp-2 dark:text-gray-400">{{ portfolio.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ portfolio.created_at|date:"d/m/Y" }}
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-left">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">סה"כ</div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">₪{{ portfolio.get_total_value|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">תשואה</div>
+                            <div class="text-sm font-semibold {% if portfolio.get_average_return >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {{ portfolio.get_average_return|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-200">אין לך תיקים עדיין</h3>
+            <p class="text-gray-600 mb-6 dark:text-gray-400">צור את התיק הראשון שלך כדי להתחיל לעקוב אחר ההשקעות</p>
+            <a href="{% url 'portfolio_create' %}" class="btn btn-primary">
+                צור תיק ראשון
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

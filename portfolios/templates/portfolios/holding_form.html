@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if action == 'add' %}הוסף קרן{% else %}ערוך קרן{% endif %} - {{ portfolio.name }} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {% if action == 'add' %}הוסף קרן{% else %}ערוך קרן{% endif %}
+            </h1>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">{{ portfolio.name }}</p>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Fund Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.fund.label }}
+                    </label>
+                    {{ form.fund }}
+                    {% if form.fund.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.fund.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Amount Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.amount.label }}
+                    </label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.amount.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">הכנס את סכום ההשקעה בשקלים</p>
+                </div>
+
+                <!-- Notes Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.notes.label }}
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if action == 'add' %}הוסף לתיק{% else %}שמור שינויים{% endif %}
+                    </button>
+                    <a href="{% url 'portfolio_detail' portfolio.pk %}" class="btn btn-secondary">
+                        ביטול
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

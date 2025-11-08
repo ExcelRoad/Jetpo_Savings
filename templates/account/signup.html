@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}הרשמה - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color-wobg.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+        <div>
+            <h2 class="text-center text-3xl font-bold text-gray-900 dark:text-gray-100">
+                צור חשבון חדש
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                כבר יש לך חשבון?
+                <a href="{% url 'account_login' %}" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">
+                    התחבר
+                </a>
+            </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+            <form method="POST" action="{% url 'account_signup' %}" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        כתובת אימייל
+                    </label>
+                    <input type="email" name="email" id="id_email" required
+                           class="input"
+                           placeholder="email@example.com">
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div>
+                        <label for="id_first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            שם פרטי
+                        </label>
+                        <input type="text" name="first_name" id="id_first_name" required class="input" placeholder="שם פרטי">
+                    </div>
+                    
+                    <div>
+                        <label for="id_last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            שם משפחה
+                        </label>
+                        <input type="text" name="last_name" id="id_last_name" required class="input" placeholder="שם משפחה">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        סיסמה
+                    </label>
+                    <input type="password" name="password1" id="id_password1" required
+                           class="input"
+                           placeholder="••••••••">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        חייבת להיות לפחות 8 תווים
+                    </p>
+                </div>
+
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        אימות סיסמה
+                    </label>
+                    <input type="password" name="password2" id="id_password2" required
+                           class="input"
+                           placeholder="••••••••">
+                </div>
+
+                {% if form.errors %}
+                <div class="rounded-md bg-red-50 dark:bg-red-900 p-4">
+                    <div class="text-sm text-red-800 dark:text-red-200">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div>
+                    <button type="submit" class="w-full btn btn-primary py-3">
+                        צור חשבון
+                    </button>
+                </div>
+
+                <p class="text-xs text-center text-gray-500 dark:text-gray-400">
+                    בהרשמה, אתה מסכים שקראת והסכמת ל<a href="{% url 'terms_conditions' %}" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank">תנאי השימוש</a>
+                    ו<a href="{% url 'privacy_policy' %}" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank">מדיניות הפרטיות</a>.
+                </p>
+            </form>
+
+            <!-- Social Signup Buttons -->
+            {% include "socialaccount/snippets/provider_list.html" with process="signup" %}
+        </div>
+
+        <!-- Back to Landing Page -->
+        <div class="text-center flex items-center justify-center">
+            <a href="{% url 'landing' %}" class="btn btn-secondary">
+                חזרה לדף הבית
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

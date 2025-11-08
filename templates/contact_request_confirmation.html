@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}בקשה נשלחה - Jetpo{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 max-w-2xl">
+    <div class="card text-center py-12">
+        <!-- Success Icon -->
+        <div class="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            הבקשה נשלחה בהצלחה!
+        </h2>
+
+        <!-- Message -->
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            נציג שלנו יצור איתך קשר תוך 24-48 שעות לגבי בקשתך.
+        </p>
+
+        <!-- Request Details -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 text-right">
+            <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-4">פרטי הבקשה</h3>
+
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 dark:text-gray-400">מספר בקשה:</span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100">#{{ contact_request.id }}</span>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 dark:text-gray-400">סטטוס:</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200">
+                        {{ contact_request.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 dark:text-gray-400">תיקים שנבחרו:</span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100">{{ contact_request.portfolio_items.count }}</span>
+                </div>
+
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">התיקים:</p>
+                    <ul class="text-sm space-y-1">
+                        {% for item in contact_request.portfolio_items.all %}
+                        <li class="text-gray-700 dark:text-gray-300">
+                            • {{ item.portfolio.name }}
+                            {% if item.portfolio.owner_name %}
+                                ({{ item.portfolio.owner_name }})
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-right">
+            <p class="text-sm text-blue-800 dark:text-blue-200">
+                <strong>שים לב:</strong> תוכל לעקוב אחרי סטטוס הבקשה בעמוד הפרופיל שלך.
+            </p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 justify-center">
+            <a href="{% url 'profile' %}" class="btn btn-secondary">
+                צפה בבקשות שלי
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                חזור לדף הבית
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

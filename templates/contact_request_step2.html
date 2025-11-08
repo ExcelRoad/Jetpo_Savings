@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}אישור פרטים - Jetpo{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center">
+            <div class="flex items-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white font-bold">
+                    ✓
+                </div>
+                <span class="mr-2 text-sm font-medium text-gray-900 dark:text-gray-100">בחירת תיקים</span>
+            </div>
+            <div class="w-16 h-1 mx-4 bg-blue-600"></div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
+                    2
+                </div>
+                <span class="mr-2 text-sm font-medium text-gray-900 dark:text-gray-100">אישור פרטים</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">אישור מספרי זהות</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">אנא אשר או עדכן את מספרי הזהות עבור התיקים שבחרת</p>
+
+        {% if portfolios_without_legal_id %}
+        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-4 py-3 rounded mb-6">
+            <p class="font-medium">שים לב:</p>
+            <p class="text-sm mt-1">חלק מהתיקים שבחרת לא מכילים מספר זהות. נא למלא את המספרים החסרים.</p>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded mb-4">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="space-y-6 mb-6">
+                {% for field in form %}
+                    {% if field.name != 'message' %}
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <p class="text-red-600 dark:text-red-400 text-sm mt-2">{{ field.errors.0 }}</p>
+                        {% endif %}
+                        {% if field.field.portfolio.owner_name %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">בעל/ת התיק: {{ field.field.portfolio.owner_name }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Message field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        {{ form.message.label }}
+                    </label>
+                    {{ form.message }}
+                    {% if form.message.errors %}
+                    <p class="text-red-600 dark:text-red-400 text-sm mt-2">{{ form.message.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'create_contact_request' %}" class="btn btn-secondary flex-1 text-center">חזור</a>
+                <button type="submit" class="btn btn-primary">שלח בקשה</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Privacy Notice -->
+    <div class="mt-6 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="flex items-start">
+            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 ml-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            <div>
+                <h4 class="font-semibold text-gray-900 dark:text-gray-100 text-sm">אבטחת מידע</h4>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    המידע ששיתפת מוצפן ומאובטח. נשתמש בו אך ורק לצורך מתן ייעוץ פיננסי מקצועי.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}מחיקת תכנית השקעה - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="text-3xl font-bold text-red-600 dark:text-red-400">מחיקת תכנית השקעה תקופתית</h1>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">תיק: {{ portfolio.name }}</p>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded-lg p-8">
+        <div class="flex items-start gap-4 mb-6">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="flex-grow">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">האם אתה בטוח?</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    פעולה זו תמחק את תכנית ההשקעה התקופתית. לא ניתן לשחזר תכנית שנמחקה.
+                </p>
+            </div>
+        </div>
+
+        <!-- Contribution Details -->
+        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6 mb-6">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">פרטי התכנית שתימחק:</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">קרן</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ holding.fund.name }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">סכום תקופתי</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">₪{{ contribution.amount|floatformat:2|intcomma }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תדירות</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">{{ contribution.get_interval_display }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תאריך התחלה</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">{{ contribution.start_date|date:"d/m/Y" }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">סטטוס</span>
+                    {% if contribution.is_active %}
+                        <span class="text-sm text-green-600 dark:text-green-400 font-medium">פעיל</span>
+                    {% else %}
+                        <span class="text-sm text-gray-600 dark:text-gray-400">מושהה</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="post" class="flex gap-3">
+            {% csrf_token %}
+            <button type="submit" class="px-6 py-3 bg-red-600 dark:bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 dark:hover:bg-red-700 active:scale-95 transition-all shadow-sm hover:shadow cursor-pointer">
+                כן, מחק תכנית
+            </button>
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all cursor-pointer">
+                ביטול
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

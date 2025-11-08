@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}בחירת תיקים לשיתוף - Jetpo{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center">
+            <div class="flex items-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
+                    1
+                </div>
+                <span class="mr-2 text-sm font-medium text-gray-900 dark:text-gray-100">בחירת תיקים</span>
+            </div>
+            <div class="w-16 h-1 mx-4 bg-gray-300 dark:bg-gray-600"></div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 font-bold">
+                    2
+                </div>
+                <span class="mr-2 text-sm font-medium text-gray-500 dark:text-gray-400">אישור פרטים</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">בקשת ייעוץ פיננסי</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">בחר את התיקים שברצונך לשתף עם היועץ שלנו</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded mb-4">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4 mb-6">
+                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                    {{ form.portfolios.label }}
+                </label>
+
+                {% if form.portfolios.field.queryset.count > 0 %}
+                    <div class="space-y-3">
+                        {% for portfolio in form.portfolios.field.queryset %}
+                        <label class="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                            <input type="checkbox" name="portfolios" value="{{ portfolio.id }}"
+                                   class="w-5 h-5 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-2"
+                                   {% if portfolio in form.portfolios.value %}checked{% endif %}>
+                            <div class="mr-3 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium text-gray-900 dark:text-gray-100">{{ portfolio.name }}</span>
+                                    {% if portfolio.get_total_value %}
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">₪{{ portfolio.get_total_value|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if portfolio.owner_name %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ portfolio.owner_name }}</p>
+                                {% endif %}
+                                {% if portfolio.legal_id %}
+                                <p class="text-xs text-green-600 dark:text-green-400 mt-1">✓ מספר זהות קיים במערכת</p>
+                                {% else %}
+                                <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠ יש למלא מספר זהות בשלב הבא</p>
+                                {% endif %}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600 dark:text-gray-400">אין לך תיקים במערכת.
+                        <a href="{% url 'portfolio_create' %}" class="text-blue-600 dark:text-blue-400 hover:underline">צור תיק חדש</a>
+                    </p>
+                {% endif %}
+
+                {% if form.portfolios.errors %}
+                <p class="text-red-600 dark:text-red-400 text-sm mt-2">{{ form.portfolios.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex gap-3">
+                <a href="{% url 'home' %}" class="btn btn-secondary flex-1 text-center">ביטול</a>
+                <button type="submit" class="btn btn-primary">המשך לשלב הבא</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">מה קורה אחרי שליחת הבקשה?</h3>
+        <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <li>• היועץ שלנו יקבל את פרטי התיקים שבחרת</li>
+            <li>• ניצור איתך קשר תוך 24-48 שעות</li>
+            <li>• תקבל ייעוץ מקצועי ומותאם אישית</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

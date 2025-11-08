@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(django-admin startproject:*)",
+      "Bash(python manage.py startapp:*)",
+      "Bash(python:*)",
+      "Bash(npm install)",
+      "Bash(npm run tailwind:build:*)",
+      "Read(//c/Users/roykl/AppData/Local/Programs/Python/Python312/Lib/site-packages/allauth/templates/account/**)",
+      "Bash(cat:*)",
+      "Bash(git diff:*)",
+      "Bash(pip install:*)",
+      "Bash(del CSS_FIX_COMPLETE.md HEBREW_RTL_CONVERSION.md MINIMAL_DESIGN_UPDATE.md GEMELNET_SYNC_GUIDE.md PROJECT_STATUS.md NEXT_STEPS.md)",
+      "Bash(mkdir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

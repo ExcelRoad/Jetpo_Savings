@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if action == 'create' %}תכנית השקעה תקופתית חדשה{% else %}עריכת תכנית השקעה{% endif %} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a href="{% url 'portfolio_detail' portfolio.pk %}" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {% if action == 'create' %}תכנית השקעה תקופתית חדשה{% else %}עריכת תכנית השקעה{% endif %}
+            </h1>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">קרן: {{ holding.fund.name }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-500">תיק: {{ portfolio.name }}</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.amount.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.amount.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.amount.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    סכום שתרצה להשקיע בכל תקופה
+                </p>
+            </div>
+
+            <div>
+                <label for="{{ form.interval.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.interval.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.interval }}
+                {% if form.interval.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.interval.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    באיזו תדירות להשקיע (יומי, שבועי, חודשי, וכו')
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ form.start_date.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.start_date.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.start_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.end_date.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.end_date.label }}
+                    </label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.end_date.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        השאר ריק עבור השקעה ללא הגבלת זמן
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="text-sm text-gray-700 dark:text-gray-300">
+                    {{ form.is_active.label }}
+                </label>
+                {% if form.is_active.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.is_active.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="text-sm text-blue-800 dark:text-blue-300">
+                        <p class="font-medium mb-1">שימו לב:</p>
+                        <p>תכנית זו היא לתכנון ותחזיות בלבד. לא תתבצע השקעה אוטומטית. המערכת תציג תחזיות על בסיס התשואה ההיסטורית של הקרן.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="px-8 py-3 bg-gray-900 dark:bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-primary-700 active:scale-95 transition-all shadow-sm hover:shadow cursor-pointer">
+                    {% if action == 'create' %}צור תכנית{% else %}שמור שינויים{% endif %}
+                </button>
+                <a href="{% url 'portfolio_detail' portfolio.pk %}" class="px-8 py-3 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all cursor-pointer">
+                    ביטול
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

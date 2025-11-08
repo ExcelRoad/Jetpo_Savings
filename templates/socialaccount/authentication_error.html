@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}שגיאת אימות - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color-wobg.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-600 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    שגיאת אימות
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    אירעה שגיאה במהלך תהליך האימות. אנא נסה שוב.
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <a href="{% url 'account_login' %}" class="w-full btn btn-primary py-3 text-center block">
+                    חזור להתחברות
+                </a>
+                <a href="{% url 'landing' %}" class="w-full btn btn-secondary py-3 text-center block">
+                    חזרה לדף הבית
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

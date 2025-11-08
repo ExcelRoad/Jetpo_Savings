@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ submission.title }} - הגשת מאמר - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+    <!-- Breadcrumb -->
+    <div class="mb-6">
+        <nav class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <a href="{% url 'profile' %}" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">הפרופיל שלי</a>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+            <span class="text-gray-900 dark:text-gray-100">{{ submission.title }}</span>
+        </nav>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="mb-6">
+        {% if submission.review_status == 'PENDING' %}
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">מאמר ממתין לבדיקה</h3>
+                        <p class="text-sm text-yellow-700 dark:text-yellow-400">המאמר שלך נמצא בתהליך בדיקה. נעדכן אותך ברגע שהבדיקה תושלם.</p>
+                    </div>
+                </div>
+            </div>
+        {% elif submission.review_status == 'APPROVED' %}
+            <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400 dark:border-green-600 p-4 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-green-800 dark:text-green-300 mb-1">מאמר אושר ופורסם</h3>
+                        <p class="text-sm text-green-700 dark:text-green-400 mb-2">המאמר שלך אושר ופורסם במרכז הידע!</p>
+                        {% if submission.approved_article %}
+                            <a href="{% url 'article_detail' submission.approved_article.slug %}" class="inline-flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                                צפה במאמר המפורסם
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% elif submission.review_status == 'DECLINED' %}
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 p-4 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">מאמר נדחה</h3>
+                        {% if submission.decline_reason %}
+                            <p class="text-sm text-red-700 dark:text-red-400 mb-1">סיבת הדחייה:</p>
+                            <p class="text-sm text-red-700 dark:text-red-400 font-medium">{{ submission.decline_reason }}</p>
+                        {% else %}
+                            <p class="text-sm text-red-700 dark:text-red-400">המאמר שלך נדחה. ניתן להגיש מאמר חדש.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Article Content -->
+    <article class="card">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">{{ submission.title }}</h1>
+
+        {% if submission.category %}
+            <div class="mb-3">
+                <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                    {{ submission.category.name }}
+                </span>
+            </div>
+        {% endif %}
+
+        <!-- Meta information -->
+        <div class="flex flex-wrap items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                {% if submission.submitter.profile_picture %}
+                    <img src="{{ submission.submitter.profile_picture.url }}" alt="{{ submission.submitter_full_name }}" class="w-5 h-5 rounded-full object-cover">
+                {% else %}
+                    <div class="w-5 h-5 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                        <span class="text-xs font-medium text-primary-700 dark:text-primary-300">
+                            {{ submission.submitter.first_name|default:submission.submitter.email|first|upper }}
+                        </span>
+                    </div>
+                {% endif %}
+                <span class="font-medium">{{ submission.submitter_full_name }}</span>
+            </div>
+
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
+                    {{ submission.get_expertise_type_display }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                </svg>
+                <span>הוגש: {{ submission.submitted_at|date:"d/m/Y H:i" }}</span>
+            </div>
+
+            {% if submission.reviewed_at %}
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <span>נבדק: {{ submission.reviewed_at|date:"d/m/Y H:i" }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tags -->
+        {% if submission.tags.all %}
+            <div class="flex flex-wrap gap-2 mb-6">
+                {% for tag in submission.tags.all %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {{ tag.name }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Article Content -->
+        <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+            {% if submission.excerpt %}
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">תקציר:</h3>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{{ submission.excerpt }}</p>
+            {% endif %}
+
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">תוכן המאמר:</h3>
+            <div class="prose prose-gray dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">{{ submission.content|safe }}</div>
+        </div>
+
+        <!-- Credentials Section -->
+        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">פרטי המומחיות</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-start gap-2">
+                    <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">סוג מומחיות:</span>
+                    <span class="text-gray-900 dark:text-gray-100">{{ submission.get_expertise_type_display }}</span>
+                </div>
+
+                {% if submission.agent_diploma_id %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">מספר רישיון סוכן:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.agent_diploma_id }}</span>
+                    </div>
+                {% endif %}
+
+                {% if submission.advisor_diploma_id %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">מספר רישיון יועץ:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.advisor_diploma_id }}</span>
+                    </div>
+                {% endif %}
+
+                {% if submission.academic_institution %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">מוסד אקדמי:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.academic_institution }}</span>
+                    </div>
+                {% endif %}
+
+                {% if submission.academic_degree %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">תואר אקדמי:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.get_academic_degree_display }}</span>
+                    </div>
+                {% endif %}
+
+                {% if submission.company_name %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">שם חברה:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.company_name }}</span>
+                    </div>
+                {% endif %}
+
+                {% if submission.other_expertise %}
+                    <div class="flex items-start gap-2">
+                        <span class="font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">מומחיות:</span>
+                        <span class="text-gray-900 dark:text-gray-100">{{ submission.other_expertise }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+
+    <!-- Actions -->
+    <div class="mt-6 flex justify-between items-center">
+        <a href="{% url 'profile' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+            </svg>
+            חזרה לפרופיל
+        </a>
+
+        {% if submission.review_status == 'DECLINED' %}
+            <a href="{% url 'submit_article' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-primary-700 active:scale-95 transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                הגש מאמר חדש
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

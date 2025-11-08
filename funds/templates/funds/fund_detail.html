@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+{% load static %}
+{% load fund_filters %}
+{% load humanize %}
+
+{% block title %}{{ fund.name }} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-start gap-4 mb-4">
+            <div class="flex-grow min-w-0">
+                <div class="flex items-center gap-3 mb-2">
+                    <a href="{% url 'fund_list' %}" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 break-words">{{ fund.name }}</h1>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">{{ fund.company.short_name|default:fund.company }}{% if fund.category %} • {{ fund.category }}{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a href="{% url 'fund_add_to_portfolio' fund.pk %}" class="btn btn-primary whitespace-nowrap">
+                    הוסף לתיק
+                </a>
+                <button onclick="toggleComparison({{ fund.pk }})" id="compareBtn" class="btn btn-secondary whitespace-nowrap">
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span id="compareBtnText">הוסף להשוואה</span>
+                </button>
+                <form method="post" action="{% url 'toggle_like' fund.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="fund_detail">
+                    <button type="submit" class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0">
+                        {% if is_liked %}
+                        <svg class="w-6 h-6 text-red-500 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        {% else %}
+                        <svg class="w-6 h-6 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fund Stats -->
+    <div class="grid md:grid-cols-3 gap-4 mb-8">
+        <div class="card">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">תשואה ממוצעת שנתית (5 שנים)</div>
+            <div class="text-3xl font-bold {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                {% if fund.return_rate %}{{ fund.return_rate }}%{% else %}—{% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">סך נכסים (מיליוני ₪)</div>
+            <div class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {% if fund.total_assets %}{{ fund.total_assets|floatformat:0|intcomma }}{% else %}—{% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">קטגוריה</div>
+            <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ fund.category|default:"—" }}</div>
+        </div>
+    </div>
+
+    <!-- Portfolios containing this fund -->
+    {% if holdings %}
+    <div class="mb-6 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
+        <div class="flex flex-wrap items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+            </svg>
+            <span>בתיקים שלך:</span>
+            {% for holding in holdings %}
+                <a href="{% url 'portfolio_detail' holding.portfolio.pk %}" class="font-medium hover:underline">{{ holding.portfolio.name }}</a>
+                <span class="text-blue-600 dark:text-blue-300">(₪{{ holding.amount|floatformat:0|intcomma }})</span>
+                {% if not forloop.last %}<span>•</span>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Fund Details -->
+    <div class="card mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">פרטי הקרן</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Column 1 -->
+            <div class="space-y-0 md:border-l md:border-gray-200 dark:md:border-gray-700 md:pl-8">
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">חברה מנהלת</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.company.short_name|default:fund.company.name }}</span>
+                </div>
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">קטגוריה</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.category|default:"—" }}</span>
+                </div>
+                {% if fund.specialization %}
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">התמחות</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.specialization }}</span>
+                </div>
+                {% endif %}
+                {% if fund.sub_specialization %}
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תת-התמחות</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.sub_specialization }}</span>
+                </div>
+                {% endif %}
+                {% if fund.inception_date %}
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תאריך הקמה</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.inception_date|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+                {% if fund.management_fee %}
+                <div class="flex justify-between py-2.5">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">דמי ניהול שנתיים</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">{{ fund.management_fee }}%</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Column 2 -->
+            <div class="space-y-0">
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תשואה שנתית (1 שנה)</span>
+                    <span class="text-sm font-medium {% if snapshots.0.ytd_yield >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if snapshots.0.ytd_yield %}{{ snapshots.0.ytd_yield }}%{% else %}—{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תשואה ממוצעת (3 שנים)</span>
+                    <span class="text-sm font-medium {% if snapshots.0.avg_annual_return_3yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if snapshots.0.avg_annual_return_3yr %}{{ snapshots.0.avg_annual_return_3yr }}%{% else %}—{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תשואה ממוצעת (5 שנים)</span>
+                    <span class="text-sm font-medium {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if fund.return_rate %}{{ fund.return_rate }}%{% else %}—{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between py-2.5 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">סך נכסים</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                        {% if fund.total_assets %}{{ fund.total_assets|floatformat:2|intcomma }} מיליון ₪{% else %}—{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between py-2.5">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">תקופת דיווח אחרונה</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                        {{ fund.latest_report_period|hebrew_period }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Performance Chart -->
+    <div class="card mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 dark:text-gray-100">תשואה היסטורית</h2>
+        {% if all_snapshots_count > 0 %}
+
+        <!-- Period Tabs -->
+        {% if period_tabs %}
+        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-reverse space-x-8 overflow-x-auto" dir="rtl">
+                {% for tab in period_tabs %}
+                <button type="button"
+                   data-period="{{ tab.label }}"
+                   data-start="{{ tab.start }}"
+                   data-end="{{ tab.end }}"
+                   onclick="filterByPeriod('{{ tab.label }}', {{ tab.start }}, {{ tab.end }})"
+                   class="period-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                    {{ tab.label }}
+                </button>
+                {% endfor %}
+            </nav>
+        </div>
+        {% endif %}
+
+        <div class="h-80">
+            <canvas id="performanceChart"></canvas>
+        </div>
+        {% else %}
+        <p class="text-gray-600 dark:text-gray-400 text-center py-8">אין נתונים זמינים</p>
+        {% endif %}
+    </div>
+
+    <!-- Historical Data -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">נתונים היסטוריים</h2>
+            {% if all_snapshots_count > 0 %}
+            <span class="text-sm text-gray-600 dark:text-gray-400">סה"כ {{ all_snapshots_count }} תקופות</span>
+            {% endif %}
+        </div>
+
+        {% if snapshots %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">תקופה</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">חודשית</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">שנה נוכחית</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">3 שנים</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">5 שנים</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">ממוצע שנתי 3 ש</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">ממוצע שנתי 5 ש</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">סך נכסים (מיל ₪)</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">הפקדות נטו</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">סטיית תקן</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">אלפא</th>
+                        <th class="text-right py-2 px-1 font-semibold text-gray-900 dark:text-gray-100">שארפ</th>
+                    </tr>
+                </thead>
+                <tbody id="snapshotsTableBody">
+                    {% for snapshot in snapshots %}
+                    <tr class="snapshot-row border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" data-period="{{ snapshot.report_period }}">
+                        <td class="py-2 px-1 text-gray-900 dark:text-gray-100 font-medium">{{ snapshot.report_period|hebrew_period }}</td>
+                        <td class="py-2 px-1 {% if snapshot.monthly_yield >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.monthly_yield %}{{ snapshot.monthly_yield }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.ytd_yield >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.ytd_yield %}{{ snapshot.ytd_yield }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.return_3yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.return_3yr %}{{ snapshot.return_3yr }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.return_5yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.return_5yr %}{{ snapshot.return_5yr }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.avg_annual_return_3yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.avg_annual_return_3yr %}{{ snapshot.avg_annual_return_3yr }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.avg_annual_return_5yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.avg_annual_return_5yr %}{{ snapshot.avg_annual_return_5yr }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 text-gray-900 dark:text-gray-100">
+                            {% if snapshot.total_assets %}{{ snapshot.total_assets|floatformat:2|intcomma }}{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 {% if snapshot.net_deposits >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if snapshot.net_deposits %}{{ snapshot.net_deposits|floatformat:2|intcomma }}{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 text-gray-900 dark:text-gray-100">
+                            {% if snapshot.standard_deviation %}{{ snapshot.standard_deviation }}{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 text-gray-900 dark:text-gray-100">
+                            {% if snapshot.alpha %}{{ snapshot.alpha }}{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 px-1 text-gray-900 dark:text-gray-100">
+                            {% if snapshot.sharpe_ratio %}{{ snapshot.sharpe_ratio }}{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-600 dark:text-gray-400 text-center py-8">אין נתונים היסטוריים זמינים לקרן זו</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('performanceChart');
+    if (!ctx) return;
+
+    // Get data from Django view (showing only available data)
+    const chartData = {{ chart_data|safe }};
+
+    const performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.periods,
+            datasets: [
+                {
+                    label: 'תשואה חודשית',
+                    data: chartData.monthly_yields,
+                    borderColor: 'rgb(96, 165, 250)',
+                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    borderWidth: 1.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    hidden: false
+                },
+                {
+                    label: 'תשואה שנתית נוכחית',
+                    data: chartData.ytd_yields,
+                    borderColor: 'rgb(167, 139, 250)',
+                    backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                    borderWidth: 1.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    hidden: true
+                },
+                {
+                    label: 'ממוצע 3 שנים',
+                    data: chartData.return_3yr,
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    hidden: false
+                },
+                {
+                    label: 'ממוצע 5 שנים',
+                    data: chartData.return_5yr,
+                    borderColor: 'rgb(251, 146, 60)',
+                    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    hidden: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    align: 'center',
+                    rtl: true,
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)',
+                    padding: 12,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(156, 163, 175, 0.2)',
+                    borderWidth: 1,
+                    rtl: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(2) + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#6B7280',
+                        font: {
+                            size: 10
+                        },
+                        maxRotation: 45,
+                        minRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 20
+                    }
+                },
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        color: 'rgba(229, 231, 235, 0.3)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6B7280',
+                        font: {
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6B7280',
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+
+    // Store chart instance globally for filtering
+    window.performanceChart = performanceChart;
+
+    // Initialize: Show first period by default
+    {% if period_tabs %}
+    const firstTab = document.querySelector('.period-tab');
+    if (firstTab) {
+        const start = parseInt(firstTab.dataset.start);
+        const end = parseInt(firstTab.dataset.end);
+        filterByPeriod(firstTab.dataset.period, start, end);
+    }
+    {% endif %}
+});
+
+// Function to filter chart and table by period
+function filterByPeriod(periodLabel, startPeriod, endPeriod) {
+    // Update tab styles
+    document.querySelectorAll('.period-tab').forEach(tab => {
+        if (tab.dataset.period === periodLabel) {
+            tab.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+            tab.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+        } else {
+            tab.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+            tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        }
+    });
+
+    // Filter table rows
+    const rows = document.querySelectorAll('.snapshot-row');
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const period = parseInt(row.dataset.period);
+        if (period >= startPeriod && period <= endPeriod) {
+            row.style.display = 'table-row';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Filter chart data
+    if (window.performanceChart) {
+        const chartData = JSON.parse('{{ chart_data|escapejs }}');
+        const filteredIndices = [];
+
+        // Find indices that match the period range
+        chartData.periods.forEach((period, index) => {
+            // Convert "MM/YYYY" to YYYYMM for comparison
+            const parts = period.split('/');
+            const periodNum = parseInt(parts[1] + parts[0]);
+
+            if (periodNum >= startPeriod && periodNum <= endPeriod) {
+                filteredIndices.push(index);
+            }
+        });
+
+        // Update chart with filtered data
+        window.performanceChart.data.labels = filteredIndices.map(i => chartData.periods[i]);
+        window.performanceChart.data.datasets[0].data = filteredIndices.map(i => chartData.monthly_yields[i]);
+        window.performanceChart.data.datasets[1].data = filteredIndices.map(i => chartData.ytd_yields[i]);
+        window.performanceChart.data.datasets[2].data = filteredIndices.map(i => chartData.return_3yr[i]);
+        window.performanceChart.data.datasets[3].data = filteredIndices.map(i => chartData.return_5yr[i]);
+
+        window.performanceChart.update('none'); // Update without animation for speed
+    }
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Toggle fund in comparison
+function toggleComparison(fundId) {
+    const btn = document.getElementById('compareBtn');
+    const btnText = document.getElementById('compareBtnText');
+    const isInComparison = btnText.textContent === 'הסר מהשוואה';
+
+    const formData = new FormData();
+    formData.append('fund_id', fundId);
+    formData.append('action', isInComparison ? 'remove' : 'add');
+
+    fetch('{% url "fund_compare_add" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.action === 'added') {
+                btnText.textContent = 'הסר מהשוואה';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+            } else {
+                btnText.textContent = 'הוסף להשוואה';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Check if fund is already in comparison on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const fundId = {{ fund.pk }};
+
+    fetch('{% url "fund_compare_add" %}?check=' + fundId, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.in_comparison) {
+            const btnText = document.getElementById('compareBtnText');
+            const btn = document.getElementById('compareBtn');
+            btnText.textContent = 'הסר מהשוואה';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        }
+    });
+});
+</script>
+{% endblock %}

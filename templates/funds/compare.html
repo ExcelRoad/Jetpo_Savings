@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}השוואת קרנות - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            השוואת קרנות
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            השווה ביצועים של עד 8 קרנות נאמנות במקביל
+        </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-8 flex gap-3">
+        <a href="{% url 'fund_compare_add' %}" class="btn btn-primary">
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            הוסף קרנות
+        </a>
+        {% if total_funds > 0 %}
+        <a href="{% url 'fund_compare_clear' %}" class="btn btn-secondary" onclick="return confirm('האם אתה בטוח שברצונך להסיר את כל הקרנות מההשוואה?')">
+            נקה הכל
+        </a>
+        {% endif %}
+    </div>
+
+    {% if total_funds == 0 %}
+    <!-- Empty State -->
+    <div class="card text-center py-16">
+        <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+            לא נבחרו קרנות להשוואה
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+            התחל להוסיף קרנות להשוואה כדי לראות את הביצועים שלהן זה מול זה
+        </p>
+        <a href="{% url 'fund_compare_add' %}" class="btn btn-primary">
+            בחר קרנות
+        </a>
+    </div>
+    {% else %}
+    <!-- Chart Section -->
+    <div class="card mb-8">
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                גרף ביצועים
+            </h2>
+
+            <!-- Category Filter (show only if more than 1 category) -->
+            {% if funds_by_category|length > 1 %}
+            <div class="mb-4">
+                <label class="text-sm text-gray-600 dark:text-gray-400 mb-2 block">סינון לפי קטגוריה:</label>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterByCategory('all')" class="category-filter-btn active px-3 py-1.5 text-sm rounded-lg border-2 border-primary-600 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300">
+                        הכל
+                    </button>
+                    {% for category in funds_by_category.keys %}
+                    <button onclick="filterByCategory('{{ category }}')" class="category-filter-btn px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {{ category }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Metric Selector -->
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <nav class="-mb-px flex space-x-reverse space-x-8 overflow-x-auto" dir="rtl">
+                    <button onclick="updateChart('avg_annual_return_3yr')" class="metric-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        ממוצע שנתי 3 שנים
+                    </button>
+                    <button onclick="updateChart('avg_annual_return_5yr')" class="metric-btn active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600 dark:text-blue-400">
+                        ממוצע שנתי 5 שנים
+                    </button>
+                    <button onclick="updateChart('return_3yr')" class="metric-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        תשואה מצטברת 3 שנים
+                    </button>
+                    <button onclick="updateChart('return_5yr')" class="metric-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        תשואה מצטברת 5 שנים
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Chart Canvas -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <canvas id="comparisonChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Funds Comparison Tables by Category -->
+    {% for category, funds in funds_by_category.items %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ category }}
+        </h2>
+
+        <div class="card overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">שם הקרן</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">חברה</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">תשואה שנתית</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">תשואה 3 שנים</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">תשואה 5 שנים</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">סך נכסים (מיל' ₪)</th>
+                        <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">דמי ניהול</th>
+                        <th class="text-center py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">פעולות</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fund in funds %}
+                    <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4">
+                            <a href="{% url 'fund_detail' fund.pk %}" class="font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                {{ fund.name }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4 text-gray-600 dark:text-gray-400">
+                            {{ fund.company.short_name|default:fund.company.name }}
+                        </td>
+                        <td class="py-3 px-4 font-semibold {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if fund.return_rate %}{{ fund.return_rate }}%{% else %}-{% endif %}
+                        </td>
+                        <td class="py-3 px-4 {% if fund.avg_return_3yr >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if fund.avg_return_3yr %}{{ fund.avg_return_3yr }}%{% else %}-{% endif %}
+                        </td>
+                        <td class="py-3 px-4 {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if fund.return_rate %}{{ fund.return_rate }}%{% else %}-{% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-100">
+                            {% if fund.total_assets %}{{ fund.total_assets|floatformat:0|intcomma }}{% else %}-{% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-100">
+                            {% if fund.management_fee %}{{ fund.management_fee }}%{% else %}-{% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'fund_compare_remove' fund.id %}" class="text-gray-400 hover:text-red-600 transition-colors" title="הסר מהשוואה">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+let comparisonChart = null;
+let currentMetric = 'avg_annual_return_5yr';
+let currentCategory = 'all';
+
+function updateChart(metric) {
+    if (metric) {
+        currentMetric = metric;
+    }
+
+    // Update metric button states (tab styling)
+    document.querySelectorAll('.metric-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+        btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+    });
+    if (event && event.target.classList.contains('metric-btn')) {
+        event.target.classList.add('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+        event.target.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+    }
+
+    // Build URL with filters
+    let url = `{% url 'fund_compare_data' %}?metric=${currentMetric}`;
+    if (currentCategory !== 'all') {
+        url += `&category=${encodeURIComponent(currentCategory)}`;
+    }
+
+    // Fetch new data
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+
+            comparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: isDark ? '#e5e7eb' : '#374151',
+                                font: {
+                                    family: 'Rubik'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            rtl: true,
+                            bodyFont: {
+                                family: 'Rubik'
+                            },
+                            titleFont: {
+                                family: 'Rubik'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: isDark ? '#9ca3af' : '#6b7280',
+                                font: {
+                                    family: 'Rubik'
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: isDark ? '#374151' : '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: isDark ? '#9ca3af' : '#6b7280',
+                                font: {
+                                    family: 'Rubik'
+                                }
+                            },
+                            grid: {
+                                color: isDark ? '#374151' : '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+}
+
+function filterByCategory(category) {
+    currentCategory = category;
+
+    // Update category button states
+    document.querySelectorAll('.category-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-2', 'border-primary-600', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-700', 'dark:text-primary-300');
+        btn.classList.add('border', 'border-gray-300', 'dark:border-gray-600', 'text-gray-700', 'dark:text-gray-300');
+    });
+    event.target.classList.add('active', 'border-2', 'border-primary-600', 'bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-700', 'dark:text-primary-300');
+    event.target.classList.remove('border', 'border-gray-300', 'dark:border-gray-600', 'text-gray-700', 'dark:text-gray-300');
+
+    // Update chart with current metric and new category
+    updateChart(null);
+}
+
+// Load initial chart
+{% if total_funds > 0 %}
+window.addEventListener('DOMContentLoaded', () => {
+    updateChart('avg_annual_return_5yr');
+});
+{% endif %}
+</script>
+{% endblock %}

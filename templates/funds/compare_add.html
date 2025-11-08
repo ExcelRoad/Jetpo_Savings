@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}הוסף קרנות להשוואה - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <!-- Header with Back Button -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                בחר קרנות להשוואה
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                {{ total_compared }} קרנות נבחרו
+            </p>
+        </div>
+        <div class="flex gap-3">
+            {% if total_compared > 0 %}
+            <a href="{% url 'fund_compare' %}" class="btn btn-primary">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                השווה ({{ total_compared }})
+            </a>
+            {% endif %}
+            <a href="{% url 'fund_compare' %}" class="btn btn-secondary">
+                חזור
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 mb-6">
+        <form method="GET" class="space-y-4">
+            <!-- Top Row: Search, Company, Category -->
+            <div class="grid md:grid-cols-3 gap-4">
+                <!-- Search -->
+                <div>
+                    <input type="text" name="search" value="{{ search_query }}"
+                           placeholder="חיפוש לפי שם קרן או חברה..."
+                           class="input">
+                </div>
+
+                <!-- Company Filter -->
+                <div>
+                    <select name="company" class="input">
+                        <option value="">כל החברות</option>
+                        {% for company in all_companies %}
+                        <option value="{{ company.id }}" {% if company_filter == company.id|stringformat:"s" %}selected{% endif %}>
+                            {{ company.short_name|default:company.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <select name="category" class="input">
+                        <option value="">כל הקטגוריות</option>
+                        {% for category in all_categories %}
+                        <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Buttons -->
+            <div class="flex items-center justify-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    סנן
+                </button>
+                <a href="{% url 'fund_compare_add' %}" class="btn btn-secondary">
+                    נקה
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    {% if page_obj %}
+    <div class="mb-4 flex justify-between items-center">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            נמצאו {{ page_obj.paginator.count|intcomma }} קרנות
+            {% if page_obj.paginator.num_pages > 1 %}
+            (עמוד {{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }})
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Funds Grid -->
+    {% if page_obj %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {% for fund in page_obj %}
+        
+        <div class="card {% if fund.id in compared_fund_ids %}ring-2 ring-primary-500{% endif %}" id="fund-{{ fund.id }}">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                    <a href="{% url 'fund_detail' fund.pk %}">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1 line-clamp-1 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+                            {{ fund.name }}
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ fund.company.short_name|default:fund.company.name }}
+                        </p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">קטגוריה</div>
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    {{ fund.category|default:"לא צוין" }}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">תשואה שנתית</div>
+                    <div class="text-lg font-semibold {% if fund.return_rate >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                        {{ fund.return_rate|default:"N/A" }}%
+                    </div>
+                </div>
+
+                <button onclick="toggleFund({{ fund.id }})"
+                        class="toggle-btn-{{ fund.id }} btn {% if fund.id in compared_fund_ids %}btn-secondary{% else %}btn-primary{% endif %}">
+                    <span class="add-text-{{ fund.id }}" {% if fund.id in compared_fund_ids %}style="display: none;"{% endif %}>
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        
+                    </span>
+                    <span class="remove-text-{{ fund.id }}" {% if fund.id not in compared_fund_ids %}style="display: none;"{% endif %}>
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        
+                    </span>
+                </button>
+            </div>
+        </div>
+        
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"
+           class="btn btn-secondary">
+            ראשון
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"
+           class="btn btn-secondary">
+            קודם
+        </a>
+        {% endif %}
+
+        <span class="btn btn-secondary">
+            עמוד {{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"
+           class="btn btn-secondary">
+            הבא
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if company_filter %}&company={{ company_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"
+           class="btn btn-secondary">
+            אחרון
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <!-- No Results -->
+    <div class="card text-center py-12">
+        <p class="text-gray-600 dark:text-gray-400">
+            לא נמצאו קרנות התואמות את החיפוש
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleFund(fundId) {
+    const card = document.getElementById(`fund-${fundId}`);
+    const button = document.querySelector(`.toggle-btn-${fundId}`);
+    const addText = document.querySelector(`.add-text-${fundId}`);
+    const removeText = document.querySelector(`.remove-text-${fundId}`);
+    const isSelected = card.classList.contains('ring-2');
+
+    const formData = new FormData();
+    formData.append('fund_id', fundId);
+    formData.append('action', isSelected ? 'remove' : 'add');
+
+    fetch('{% url "fund_compare_add" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Toggle selection state
+            if (isSelected) {
+                card.classList.remove('ring-2', 'ring-primary-500');
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-primary');
+                addText.style.display = '';
+                removeText.style.display = 'none';
+            } else {
+                card.classList.add('ring-2', 'ring-primary-500');
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-secondary');
+                addText.style.display = 'none';
+                removeText.style.display = '';
+            }
+
+            // Update counter
+            const header = document.querySelector('h1 + p');
+            header.textContent = `${data.total_compared} קרנות נבחרו`;
+
+            // Update compare button visibility
+            const compareBtn = document.querySelector('.btn-primary');
+            if (data.total_compared > 0 && !compareBtn) {
+                location.reload();
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}אימות אימייל - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color-wobg.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+
+        {% if confirmation %}
+            <div class="bg-white rounded-lg shadow-md p-8 dark:bg-gray-800">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 dark:text-gray-100">
+                        אשר את כתובת האימייל שלך
+                    </h2>
+                    <p class="text-gray-600 mb-6 dark:text-gray-400">
+                        אנא אשר כי <strong class="dark:text-gray-200">{{ confirmation.email_address.email }}</strong> היא כתובת האימייל שלך.
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'account_confirm_email' confirmation.key %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full btn btn-primary py-3">
+                        אשר כתובת אימייל
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                    קישור לא תקף
+                </h2>
+                <p class="text-gray-600 mb-8">
+                    קישור האימות אינו תקף או שכבר נעשה בו שימוש.
+                </p>
+
+                <a href="{% url 'account_email' %}" class="btn btn-primary inline-block">
+                    נהל כתובות אימייל
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

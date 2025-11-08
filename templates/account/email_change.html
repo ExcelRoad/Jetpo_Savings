@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}שינוי אימייל - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+        <div>
+            <h2 class="text-center text-3xl font-bold text-gray-900">
+                שנה כתובת אימייל
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                הזן את כתובת האימייל החדשה שלך
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-700 mb-2">
+                        כתובת אימייל חדשה
+                    </label>
+                    <input type="email" name="email" id="id_email" required
+                           class="input"
+                           placeholder="email@example.com">
+                </div>
+
+                {% if form.errors %}
+                <div class="rounded-md bg-red-50 p-4">
+                    <div class="text-sm text-red-800">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="rounded-md {% if message.tags == 'success' %}bg-green-50{% else %}bg-blue-50{% endif %} p-4">
+                            <div class="text-sm {% if message.tags == 'success' %}text-green-800{% else %}text-blue-800{% endif %}">
+                                {{ message }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div>
+                    <button type="submit" class="w-full btn btn-primary py-3">
+                        שנה אימייל
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <a href="{% url 'home' %}" class="text-sm font-medium text-primary-600 hover:text-primary-500">
+                        חזרה לדף הבית
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

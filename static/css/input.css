@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal Notion-inspired Design */
+@layer base {
+  body {
+    @apply bg-white text-gray-800;
+  }
+}
+
+@layer components {
+  /* Buttons - Minimal style */
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center justify-center active:scale-95;
+  }
+
+  .btn-primary {
+    @apply bg-gray-900 text-white hover:bg-gray-700 dark:bg-primary-600 dark:hover:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-gray-50 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800;
+  }
+
+  /* Inputs - Clean and minimal */
+  .input {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-white transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-primary-500;
+  }
+
+  /* Required field indicator - red asterisk */
+  .required-asterisk {
+    @apply text-red-600 dark:text-red-500 ml-1;
+  }
+
+  /* Cards - More visible with darker border and blue hover */
+  .card {
+    @apply bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-400 transition-all dark:bg-gray-800 dark:border-gray-700 dark:hover:border-blue-500;
+  }
+
+  /* Alert animations */
+  @keyframes slideInDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  .alert {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg border shadow-sm z-50;
+    animation: slideInDown 0.3s ease-out;
+  }
+
+  .alert.fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+  }
+
+  .alert-success {
+    @apply bg-green-50 border-green-200 text-green-800 dark:bg-green-900/50 dark:border-green-700 dark:text-green-100;
+  }
+
+  .alert-error {
+    @apply bg-red-50 border-red-200 text-red-800 dark:bg-red-900/50 dark:border-red-700 dark:text-red-100;
+  }
+
+  .alert-warning {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/50 dark:border-yellow-700 dark:text-yellow-100;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/50 dark:border-blue-700 dark:text-blue-100;
+  }
+
+  /* Modal animations */
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  /* Article content - remove text-indent and paragraph styling */
+  .article-content {
+    text-indent: 0 !important;
+  }
+
+  .article-content *,
+  .article-content p,
+  .article-content div {
+    text-indent: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Additional utility to force no text-indent */
+@layer utilities {
+  .no-indent {
+    text-indent: 0 !important;
+  }
+
+  .no-indent * {
+    text-indent: 0 !important;
+  }
+}

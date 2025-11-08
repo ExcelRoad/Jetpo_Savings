@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block title %}הגשת מאמר - מרכז הידע - Jetpo{% endblock %}
+
+{% block extra_css %}
+{{ form.media.css }}
+<style>
+    /* CKEditor RTL and styling fixes */
+    .django-ckeditor-widget,
+    .cke {
+        direction: rtl !important;
+    }
+
+    /* Light mode */
+    .cke_chrome {
+        border-radius: 0.5rem !important;
+        border: 1px solid rgb(209, 213, 219) !important;
+        background: white !important;
+    }
+
+    .cke_inner,
+    .cke_top {
+        background: white !important;
+        border-bottom: 1px solid rgb(229, 231, 235) !important;
+    }
+
+    .cke_contents {
+        background: white !important;
+    }
+
+    /* Dark mode - Complete styling */
+    .dark .cke_chrome {
+        border-color: rgb(55, 65, 81) !important;
+        background: rgb(31, 41, 55) !important;
+    }
+
+    .dark .cke_inner {
+        background: rgb(31, 41, 55) !important;
+    }
+
+    .dark .cke_top {
+        background: rgb(17, 24, 39) !important;
+        border-bottom: 1px solid rgb(55, 65, 81) !important;
+    }
+
+    .dark .cke_contents {
+        background: rgb(31, 41, 55) !important;
+        border: none !important;
+    }
+
+    .dark .cke_wysiwyg_frame,
+    .dark .cke_wysiwyg_div {
+        background: rgb(31, 41, 55) !important;
+        color: rgb(243, 244, 246) !important;
+    }
+
+    /* Toolbar buttons in dark mode */
+    .dark .cke_button {
+        background: transparent !important;
+    }
+
+    .dark .cke_button:hover {
+        background: rgb(55, 65, 81) !important;
+    }
+
+    .dark .cke_button_on {
+        background: rgb(55, 65, 81) !important;
+    }
+
+    .dark .cke_button_icon {
+        filter: invert(1) brightness(0.9);
+    }
+
+    .dark .cke_combo_text {
+        color: rgb(243, 244, 246) !important;
+    }
+
+    .dark .cke_combo_arrow {
+        filter: invert(1) brightness(0.9);
+    }
+
+    .dark .cke_toolgroup {
+        border: 1px solid rgb(55, 65, 81) !important;
+        background: rgb(31, 41, 55) !important;
+    }
+
+    .dark .cke_separator {
+        background-color: rgb(55, 65, 81) !important;
+    }
+
+    /* Bottom bar in dark mode */
+    .dark .cke_bottom {
+        background: rgb(17, 24, 39) !important;
+        border-top: 1px solid rgb(55, 65, 81) !important;
+    }
+
+    .dark .cke_path_item,
+    .dark .cke_path_empty {
+        color: rgb(156, 163, 175) !important;
+    }
+
+    /* Resize handle */
+    .dark .cke_resizer {
+        border-color: transparent rgb(75, 85, 99) transparent transparent !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">הגשת מאמר למרכז הידע</h1>
+        <p class="text-gray-600 dark:text-gray-400">שתף את הידע והמומחיות שלך עם הקהילה</p>
+    </div>
+
+    <!-- Instructions Card -->
+    <div class="card mb-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">הוראות הגשה:</h3>
+        <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>ניתן להגיש מאמר אחד בכל פעם. לאחר שהמאמר יבדק, תוכל להגיש מאמר נוסף</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>המאמרים עוברים בדיקה לפני הפרסום במרכז הידע</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>תוכל לעקוב אחר סטטוס המאמרים שהגשת בעמוד הפרופיל שלך</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>במקרה של דחייה, תוכל לראות את הסיבה ולהגיש מאמר חדש</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Submission Form -->
+    <form method="post" class="card">
+        {% csrf_token %}
+
+        <!-- Author Information -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">פרטי כותב המאמר</h3>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.submitter_full_name.label }}</label>
+                {{ form.submitter_full_name }}
+                {% if form.submitter_full_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.submitter_full_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.expertise_type.label }} <span class="required-asterisk">*</span></label>
+                {{ form.expertise_type }}
+                {% if form.expertise_type.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.expertise_type.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Conditional fields based on expertise type -->
+            <div id="agentFields" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.agent_diploma_id.label }} <span class="required-asterisk">*</span></label>
+                {{ form.agent_diploma_id }}
+                {% if form.agent_diploma_id.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.agent_diploma_id.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div id="advisorFields" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.advisor_diploma_id.label }} <span class="required-asterisk">*</span></label>
+                {{ form.advisor_diploma_id }}
+                {% if form.advisor_diploma_id.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.advisor_diploma_id.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div id="academicFields" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.academic_institution.label }} <span class="required-asterisk">*</span></label>
+                    {{ form.academic_institution }}
+                    {% if form.academic_institution.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.academic_institution.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.academic_degree.label }} <span class="required-asterisk">*</span></label>
+                    {{ form.academic_degree }}
+                    {% if form.academic_degree.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.academic_degree.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="companyFields" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.company_name.label }} <span class="required-asterisk">*</span></label>
+                {{ form.company_name }}
+                {% if form.company_name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.company_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div id="otherFields" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.other_expertise.label }} <span class="required-asterisk">*</span></label>
+                {{ form.other_expertise }}
+                {% if form.other_expertise.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.other_expertise.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="my-6 border-gray-200 dark:border-gray-700">
+
+        <!-- Article Content -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">תוכן המאמר</h3>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.title.label }} <span class="required-asterisk">*</span></label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.english_title.label }}</label>
+                {{ form.english_title }}
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 inline ml-1">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                    </svg>
+                    מלא שדה זה כדי לקבל יותר חשיפה למאמר ולך
+                </p>
+                {% if form.english_title.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.english_title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.excerpt.label }} <span class="required-asterisk">*</span></label>
+                {{ form.excerpt }}
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">תקציר קצר של המאמר (עד 300 תווים)</p>
+                {% if form.excerpt.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.excerpt.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.content.label }} <span class="required-asterisk">*</span></label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.content.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.category.label }} <span class="required-asterisk">*</span></label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ form.tags.label }}</label>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    {% for checkbox in form.tags %}
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ checkbox.tag }}
+                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ checkbox.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">בחר תגיות רלוונטיות למאמר</p>
+                {% if form.tags.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.tags.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex gap-4 items-center pt-4">
+            <button type="submit" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                </svg>
+                הגש מאמר לבדיקה
+            </button>
+            <a href="{% url 'knowledge_center' %}" class="btn btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Show/hide conditional fields based on expertise type
+    const expertiseSelect = document.getElementById('{{ form.expertise_type.id_for_label }}');
+    const agentFields = document.getElementById('agentFields');
+    const advisorFields = document.getElementById('advisorFields');
+    const academicFields = document.getElementById('academicFields');
+    const companyFields = document.getElementById('companyFields');
+    const otherFields = document.getElementById('otherFields');
+
+    function updateExpertiseFields() {
+        const value = expertiseSelect.value;
+
+        // Hide all conditional fields
+        agentFields.classList.add('hidden');
+        advisorFields.classList.add('hidden');
+        academicFields.classList.add('hidden');
+        companyFields.classList.add('hidden');
+        otherFields.classList.add('hidden');
+
+        // Show relevant fields
+        if (value === 'AGENT') {
+            agentFields.classList.remove('hidden');
+        } else if (value === 'ADVISOR') {
+            advisorFields.classList.remove('hidden');
+        } else if (value === 'ACADEMIC') {
+            academicFields.classList.remove('hidden');
+        } else if (value === 'ANALYST' || value === 'INVESTOR') {
+            companyFields.classList.remove('hidden');
+        } else if (value === 'OTHER') {
+            otherFields.classList.remove('hidden');
+        }
+    }
+
+    expertiseSelect.addEventListener('change', updateExpertiseFields);
+    // Run on page load in case of form errors
+    updateExpertiseFields();
+</script>
+
+{{ form.media.js }}
+{% endblock %}

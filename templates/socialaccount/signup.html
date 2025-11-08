@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}הרשמה עם {{ provider.name }} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <img src="{% static 'app_logo/logo-color-wobg.png' %}" alt="Jetpo Logo" class="h-12 mx-auto mb-6">
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    הרשמה עם {{ provider.name }}
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    אתה עומד להירשם באמצעות חשבון צד שלישי מ-{{ provider.name }}.
+                </p>
+            </div>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 btn btn-primary py-3">
+                        המשך
+                    </button>
+                    <a href="{% url 'account_signup' %}" class="flex-1 btn btn-secondary py-3 text-center">
+                        ביטול
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Back to Landing Page -->
+        <div class="text-center flex items-center justify-center">
+            <a href="{% url 'landing' %}" class="btn btn-secondary">
+                חזרה לדף הבית
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

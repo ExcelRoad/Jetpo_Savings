@@ -1,0 +1,50 @@
+# Core Django
+Django==5.1.4
+python-decouple==3.8
+
+# Database
+psycopg2-binary==2.9.10
+dj-database-url==3.0.1
+
+# Authentication & Security
+django-allauth==65.3.0
+cryptography==46.0.3
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.4.0
+django-cors-headers==4.6.0
+
+# Forms & Validation
+django-crispy-forms==2.3
+crispy-tailwind==1.0.3
+
+# Rich Text Editor
+django-ckeditor==6.7.3
+
+# Data Processing (for Gemelnet)
+requests==2.32.3
+pandas==2.2.3
+openpyxl==3.1.5
+
+# Utilities
+python-slugify==8.0.4
+Pillow==11.0.0
+anyascii==0.3.3
+
+# Development
+django-extensions==3.2.3
+django-debug-toolbar==4.4.6
+
+# Production
+gunicorn==23.0.0
+whitenoise==6.8.2
+django-cloudinary-storage==0.3.0
+cloudinary==1.44.1
+
+# Testing
+pytest==8.3.4
+pytest-django==4.9.0
+factory-boy==3.3.1
+
+# Code Quality
+black==24.10.0
+flake8==7.1.1

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if action == 'create' %}תיק חדש{% else %}עריכת תיק{% endif %} - Jetpo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            {% if action == 'create' %}צור תיק השקעות חדש{% else %}ערוך תיק{% endif %}
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+            {% if action == 'create' %}הוסף פרטים על התיק החדש שלך{% else %}עדכן את פרטי התיק{% endif %}
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-8">
+        <form method="post" class="space-y-6" id="portfolioForm">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.owner_name.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.owner_name.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.owner_name }}
+                {% if form.owner_name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.owner_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.date_of_birth.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ form.gender.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.gender }}
+                    {% if form.gender.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.gender.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.name.label }}
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+                {% if action == 'create' %}
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    אם תשאיר ריק, שם התיק ייווצר אוטומטית מתוך שם הבעלים
+                </p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.description.label }}
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    תאר את מטרות התיק והאסטרטגיה (אופציונלי)
+                </p>
+            </div>
+
+            <div>
+                <label for="{{ form.legal_id.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.legal_id.label }}
+                </label>
+                {{ form.legal_id }}
+                {% if form.legal_id.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.legal_id.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    מספר תעודת זהות (נדרש כדי לשתף את התיק עם סוכנים פיננסיים)
+                </p>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="px-8 py-3 bg-gray-900 dark:bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-primary-700 active:scale-95 transition-all shadow-sm hover:shadow cursor-pointer">
+                    {% if action == 'create' %}צור תיק{% else %}שמור שינויים{% endif %}
+                </button>
+                <a href="{% if action == 'update' %}{% url 'portfolio_detail' portfolio.pk %}{% else %}{% url 'home' %}{% endif %}" class="px-8 py-3 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all cursor-pointer">
+                    ביטול
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if action == 'create' %}
+    <script>
+        // Auto-generate portfolio name from owner name
+        const ownerNameInput = document.getElementById('id_owner_name');
+        const portfolioNameInput = document.getElementById('id_name');
+        let nameManuallyEdited = false;
+
+        // Track if user manually edited the name field
+        portfolioNameInput.addEventListener('input', function() {
+            nameManuallyEdited = true;
+        });
+
+        // Auto-generate name when owner name changes
+        ownerNameInput.addEventListener('input', function() {
+            if (!nameManuallyEdited && ownerNameInput.value) {
+                portfolioNameInput.value = 'התיק של ' + ownerNameInput.value;
+            }
+        });
+    </script>
+    {% endif %}
+</div>
+{% endblock %}
