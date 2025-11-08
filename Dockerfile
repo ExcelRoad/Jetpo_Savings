@@ -33,4 +33,4 @@ RUN python manage.py collectstatic --noinput
 
 # Run migrations and start server
 ENTRYPOINT ["sh", "-c"]
-CMD ["python manage.py migrate --noinput && gunicorn config.wsgi --log-file - --log-level info --bind 0.0.0.0:$PORT"]
+CMD ["python manage.py migrate --noinput && gunicorn config.wsgi --log-file - --log-level info --timeout 120 --bind 0.0.0.0:$PORT"]
