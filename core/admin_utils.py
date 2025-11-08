@@ -29,17 +29,22 @@ def check_config(request):
 
     # Test actual image URL generation
     User = get_user_model()
-    users_with_pics = User.objects.filter(profile_picture__isnull=False)
+    users_with_pics = User.objects.filter(profile_picture__isnull=False).exclude(profile_picture='')
     info['USERS_WITH_PICTURES'] = users_with_pics.count()
 
-    test_user = users_with_pics.first()
-    if test_user and test_user.profile_picture:
+    if users_with_pics.exists():
+        test_user = users_with_pics.first()
         info['SAMPLE_EMAIL'] = test_user.email
-        info['SAMPLE_PICTURE_NAME'] = test_user.profile_picture.name
-        info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url
-        info['URL_STARTS_WITH_CLOUDINARY'] = 'res.cloudinary.com' in test_user.profile_picture.url
+        info['SAMPLE_PICTURE_NAME'] = test_user.profile_picture.name if test_user.profile_picture else 'EMPTY'
+        try:
+            info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url if test_user.profile_picture else 'NO URL'
+            info['URL_STARTS_WITH_CLOUDINARY'] = 'res.cloudinary.com' in str(test_user.profile_picture.url) if test_user.profile_picture else False
+        except Exception as e:
+            info['SAMPLE_IMAGE_URL'] = f'ERROR: {str(e)}'
+            info['URL_STARTS_WITH_CLOUDINARY'] = False
     else:
         info['SAMPLE_IMAGE_URL'] = 'No user with profile picture found'
+        info['URL_STARTS_WITH_CLOUDINARY'] = False
 
     html = f"""
     <!DOCTYPE html>
