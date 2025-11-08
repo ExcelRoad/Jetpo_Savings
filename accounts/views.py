@@ -49,8 +49,11 @@ def profile_update(request):
 
                 # If there was an old picture, delete it
                 if old_picture:
-                    if os.path.isfile(old_picture.path):
-                        os.remove(old_picture.path)
+                    try:
+                        # This works for both local and Cloudinary storage
+                        old_picture.delete(save=False)
+                    except Exception:
+                        pass  # Ignore errors during deletion
 
                 messages.success(request, 'תמונת הפרופיל עודכנה בהצלחה!')
             else:
@@ -79,9 +82,11 @@ def delete_profile_picture(request):
     """
     if request.method == 'POST':
         if request.user.profile_picture:
-            # Delete the file from storage
-            if os.path.isfile(request.user.profile_picture.path):
-                os.remove(request.user.profile_picture.path)
+            try:
+                # Delete the file from storage (works for both local and Cloudinary)
+                request.user.profile_picture.delete(save=False)
+            except Exception:
+                pass  # Ignore errors during deletion
             # Clear the field in the database
             request.user.profile_picture = None
             request.user.save()
@@ -136,8 +141,11 @@ def delete_account(request):
 
         # Delete profile picture file if exists
         if user.profile_picture:
-            if os.path.isfile(user.profile_picture.path):
-                os.remove(user.profile_picture.path)
+            try:
+                # Delete the file from storage (works for both local and Cloudinary)
+                user.profile_picture.delete(save=False)
+            except Exception:
+                pass  # Ignore errors during deletion
 
         # Store email for the message
         user_email = user.email
