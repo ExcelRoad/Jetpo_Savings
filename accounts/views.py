@@ -43,19 +43,34 @@ def profile_update(request):
             # Profile picture form submitted
             if 'profile_picture' in request.FILES:
                 # Profile picture update - only update the picture field
+                import logging
+                logger = logging.getLogger(__name__)
+
                 user = request.user
-                user.profile_picture = request.FILES['profile_picture']
-                user.save()
+                uploaded_file = request.FILES['profile_picture']
 
-                # If there was an old picture, delete it
-                if old_picture:
-                    try:
-                        # This works for both local and Cloudinary storage
-                        old_picture.delete(save=False)
-                    except Exception:
-                        pass  # Ignore errors during deletion
+                logger.info(f"Uploading profile picture: {uploaded_file.name}, size: {uploaded_file.size}")
 
-                messages.success(request, 'תמונת הפרופיל עודכנה בהצלחה!')
+                try:
+                    user.profile_picture = uploaded_file
+                    user.save()
+
+                    logger.info(f"Saved profile picture. Field name: {user.profile_picture.name}")
+                    logger.info(f"Generated URL: {user.profile_picture.url}")
+
+                    # If there was an old picture, delete it
+                    if old_picture and old_picture != user.profile_picture:
+                        try:
+                            # This works for both local and Cloudinary storage
+                            old_picture.delete(save=False)
+                            logger.info("Deleted old profile picture")
+                        except Exception as e:
+                            logger.warning(f"Failed to delete old picture: {str(e)}")
+
+                    messages.success(request, 'תמונת הפרופיל עודכנה בהצלחה!')
+                except Exception as e:
+                    logger.error(f"Error uploading profile picture: {str(e)}", exc_info=True)
+                    messages.error(request, f'שגיאה בהעלאת התמונה: {str(e)}')
             else:
                 messages.warning(request, 'לא נבחרה תמונה חדשה.')
             return redirect('profile')
