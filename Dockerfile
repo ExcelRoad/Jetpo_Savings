@@ -22,7 +22,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Install Node dependencies
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install
 
 # Copy project
