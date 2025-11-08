@@ -32,4 +32,4 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 
 # Run migrations and start server
-CMD python manage.py migrate && gunicorn config.wsgi --log-file - --bind 0.0.0.0:$PORT
+CMD python manage.py migrate && gunicorn config.wsgi --log-file - --log-level debug --bind 0.0.0.0:$PORT
