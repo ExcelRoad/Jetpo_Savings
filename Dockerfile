@@ -32,4 +32,5 @@ COPY . .
 RUN python manage.py collectstatic --noinput
 
 # Run migrations and start server
-CMD ["sh", "-c", "echo 'Running migrations...' && python manage.py migrate --noinput && echo 'Starting Gunicorn...' && exec gunicorn config.wsgi --log-file - --log-level info --bind 0.0.0.0:$PORT"]
+ENTRYPOINT ["sh", "-c"]
+CMD ["python manage.py migrate --noinput && gunicorn config.wsgi --log-file - --log-level info --bind 0.0.0.0:$PORT"]
