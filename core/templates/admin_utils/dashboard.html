@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Utilities - Jetpo{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold mb-6">Admin Utilities</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                <pre class="whitespace-pre-wrap">{{ message }}</pre>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-gray-600 text-sm">Total Users</h3>
+            <p class="text-3xl font-bold">{{ users_count }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-gray-600 text-sm">Staff Users</h3>
+            <p class="text-3xl font-bold">{{ staff_count }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-gray-600 text-sm">Superusers</h3>
+            <p class="text-3xl font-bold">{{ superuser_count }}</p>
+        </div>
+    </div>
+
+    <!-- Promote to Superuser -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 class="text-xl font-bold mb-4">Promote User to Superuser</h2>
+        <p class="text-gray-600 mb-4">Enter the email address of the user you want to promote to superuser status.</p>
+
+        <form method="post" action="{% url 'promote_to_superuser' %}" class="flex gap-4">
+            {% csrf_token %}
+            <input
+                type="email"
+                name="email"
+                placeholder="user@example.com"
+                required
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <button
+                type="submit"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+                Promote to Superuser
+            </button>
+        </form>
+    </div>
+
+    <!-- Sync Gemelnet Data -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 class="text-xl font-bold mb-4">Sync Gemelnet Data</h2>
+        <p class="text-gray-600 mb-4">Fetch and sync fund data from the Israeli government Gemelnet API. This may take several minutes.</p>
+
+        <form method="post" action="{% url 'sync_gemelnet_web' %}" class="flex gap-4">
+            {% csrf_token %}
+            <input
+                type="number"
+                name="limit"
+                placeholder="Limit (leave empty for all)"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <button
+                type="submit"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                onclick="return confirm('This will sync all Gemelnet data. This may take several minutes. Continue?')"
+            >
+                Run Sync
+            </button>
+        </form>
+        <p class="text-sm text-gray-500 mt-2">
+            Note: Leave limit empty to sync all data, or enter a number (e.g., 100) for testing.
+        </p>
+    </div>
+
+    <!-- Back to Admin -->
+    <div class="mt-8">
+        <a href="{% url 'admin:index' %}" class="text-blue-600 hover:text-blue-800">
+            ← Back to Django Admin
+        </a>
+    </div>
+</div>
+{% endblock %}

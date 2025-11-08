@@ -10,10 +10,21 @@ from core.views import (
     contact_request_confirmation, privacy_policy, terms_conditions,
     agents_landing_view
 )
+from core.admin_utils import (
+    admin_dashboard, promote_to_superuser, sync_gemelnet, initial_setup
+)
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+
+    # Initial Setup (ONE-TIME - remove after first superuser is created)
+    path('initial-setup/', initial_setup, name='initial_setup'),
+
+    # Admin Utilities
+    path('admin-utils/', admin_dashboard, name='admin_utils_dashboard'),
+    path('admin-utils/promote/', promote_to_superuser, name='promote_to_superuser'),
+    path('admin-utils/sync-gemelnet/', sync_gemelnet, name='sync_gemelnet_web'),
 
     # Authentication (allauth)
     path('accounts/', include('allauth.urls')),
