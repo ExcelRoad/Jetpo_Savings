@@ -18,14 +18,41 @@ def check_config(request):
     from django.conf import settings
     from decouple import config
     from django.contrib.auth import get_user_model
+    import cloudinary
 
     info = {
         'DEBUG': settings.DEBUG,
         'CLOUDINARY_CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default='NOT SET'),
         'CLOUDINARY_API_KEY': config('CLOUDINARY_API_KEY', default='NOT SET')[:10] + '...' if config('CLOUDINARY_API_KEY', default='') else 'NOT SET',
+        'CLOUDINARY_API_SECRET': 'SET' if config('CLOUDINARY_API_SECRET', default='') else 'NOT SET',
         'DEFAULT_FILE_STORAGE': settings.DEFAULT_FILE_STORAGE,
         'MEDIA_URL': getattr(settings, 'MEDIA_URL', 'NOT SET'),
+        'CLOUDINARY_CONFIG': str(cloudinary.config()),
     }
+
+    # Test Cloudinary connection
+    cloudinary_test_result = "Not tested"
+    try:
+        import cloudinary.uploader
+        from io import BytesIO
+        from PIL import Image
+
+        # Create a tiny test image
+        img = Image.new('RGB', (10, 10), color='red')
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        # Try to upload to Cloudinary
+        result = cloudinary.uploader.upload(buffer, folder='test', public_id='test_upload')
+        cloudinary_test_result = f"SUCCESS - URL: {result.get('secure_url', 'No URL')}"
+
+        # Delete the test image
+        cloudinary.uploader.destroy(result['public_id'])
+    except Exception as e:
+        cloudinary_test_result = f"FAILED - {str(e)}"
+
+    info['CLOUDINARY_UPLOAD_TEST'] = cloudinary_test_result
 
     # Test actual image URL generation
     User = get_user_model()
