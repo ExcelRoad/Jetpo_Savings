@@ -202,10 +202,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # WhiteNoise configuration for serving static files in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files - Cloudinary for production, local for development
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
 # Cloudinary configuration (MEDIA files only, NOT static files)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
@@ -217,11 +213,12 @@ CLOUDINARY_STORAGE = {
 # Static files are handled by WhiteNoise
 if CLOUDINARY_STORAGE['CLOUD_NAME']:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    # Ensure MEDIA_URL points to Cloudinary
-    MEDIA_URL = '/media/'
+    # Don't set MEDIA_URL - let Cloudinary provide the full URL
 else:
+    # Local development: use file system storage
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
