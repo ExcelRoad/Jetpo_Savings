@@ -29,9 +29,15 @@ def check_config(request):
 
     # Test actual image URL generation
     User = get_user_model()
-    test_user = User.objects.filter(profile_picture__isnull=False).first()
+    users_with_pics = User.objects.filter(profile_picture__isnull=False)
+    info['USERS_WITH_PICTURES'] = users_with_pics.count()
+
+    test_user = users_with_pics.first()
     if test_user and test_user.profile_picture:
+        info['SAMPLE_EMAIL'] = test_user.email
+        info['SAMPLE_PICTURE_NAME'] = test_user.profile_picture.name
         info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url
+        info['URL_STARTS_WITH_CLOUDINARY'] = 'res.cloudinary.com' in test_user.profile_picture.url
     else:
         info['SAMPLE_IMAGE_URL'] = 'No user with profile picture found'
 
