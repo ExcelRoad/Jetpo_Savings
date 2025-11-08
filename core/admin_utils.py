@@ -32,6 +32,7 @@ def check_config(request):
     users_with_pics = User.objects.filter(profile_picture__isnull=False).exclude(profile_picture='')
     info['USERS_WITH_PICTURES'] = users_with_pics.count()
 
+    image_html = ""
     if users_with_pics.exists():
         test_user = users_with_pics.first()
         info['SAMPLE_EMAIL'] = test_user.email
@@ -39,6 +40,22 @@ def check_config(request):
         try:
             info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url if test_user.profile_picture else 'NO URL'
             info['URL_STARTS_WITH_CLOUDINARY'] = 'res.cloudinary.com' in str(test_user.profile_picture.url) if test_user.profile_picture else False
+
+            # Create image preview HTML
+            if test_user.profile_picture:
+                image_url = test_user.profile_picture.url
+                image_html = f"""
+                <div style="margin-top: 20px; padding: 20px; border: 1px solid #ddd;">
+                    <h2>Image Preview Test</h2>
+                    <p>Attempting to load: <a href="{image_url}" target="_blank">{image_url}</a></p>
+                    <img src="{image_url}" alt="Profile Picture" style="max-width: 400px; border: 2px solid #007bff;"
+                         onerror="this.style.border='2px solid red'; this.alt='IMAGE FAILED TO LOAD';"
+                         onload="this.style.border='2px solid green';">
+                    <p style="margin-top: 10px;">
+                        <small>Green border = loaded successfully, Red border = failed to load</small>
+                    </p>
+                </div>
+                """
         except Exception as e:
             info['SAMPLE_IMAGE_URL'] = f'ERROR: {str(e)}'
             info['URL_STARTS_WITH_CLOUDINARY'] = False
@@ -53,6 +70,7 @@ def check_config(request):
     <body style="font-family: monospace; padding: 20px;">
         <h1>Configuration Status</h1>
         <pre>{chr(10).join(f'{k}: {v}' for k, v in info.items())}</pre>
+        {image_html}
     </body>
     </html>
     """
