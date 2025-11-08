@@ -63,7 +63,19 @@ def check_config(request):
     if users_with_pics.exists():
         test_user = users_with_pics.first()
         info['SAMPLE_EMAIL'] = test_user.email
-        info['SAMPLE_PICTURE_NAME'] = test_user.profile_picture.name if test_user.profile_picture else 'EMPTY'
+
+        # CloudinaryField has different attributes than ImageField
+        try:
+            if test_user.profile_picture:
+                if hasattr(test_user.profile_picture, 'public_id'):
+                    info['SAMPLE_PICTURE_NAME'] = test_user.profile_picture.public_id
+                else:
+                    info['SAMPLE_PICTURE_NAME'] = str(test_user.profile_picture)
+            else:
+                info['SAMPLE_PICTURE_NAME'] = 'EMPTY'
+        except Exception:
+            info['SAMPLE_PICTURE_NAME'] = 'ERROR'
+
         try:
             info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url if test_user.profile_picture else 'NO URL'
             info['URL_STARTS_WITH_CLOUDINARY'] = 'res.cloudinary.com' in str(test_user.profile_picture.url) if test_user.profile_picture else False

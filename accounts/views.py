@@ -55,15 +55,20 @@ def profile_update(request):
                     user.profile_picture = uploaded_file
                     user.save()
 
-                    logger.info(f"Saved profile picture. Field name: {user.profile_picture.name}")
-                    logger.info(f"Generated URL: {user.profile_picture.url}")
+                    # CloudinaryResource object has different attributes than ImageField
+                    try:
+                        logger.info(f"Saved profile picture. Public ID: {user.profile_picture.public_id}")
+                        logger.info(f"Generated URL: {user.profile_picture.url}")
+                    except Exception:
+                        logger.info(f"Saved profile picture successfully")
 
-                    # If there was an old picture, delete it
-                    if old_picture and old_picture != user.profile_picture:
+                    # If there was an old picture, delete it from Cloudinary
+                    if old_picture:
                         try:
-                            # This works for both local and Cloudinary storage
-                            old_picture.delete(save=False)
-                            logger.info("Deleted old profile picture")
+                            import cloudinary.uploader
+                            if hasattr(old_picture, 'public_id'):
+                                cloudinary.uploader.destroy(old_picture.public_id)
+                                logger.info(f"Deleted old profile picture: {old_picture.public_id}")
                         except Exception as e:
                             logger.warning(f"Failed to delete old picture: {str(e)}")
 
@@ -98,8 +103,10 @@ def delete_profile_picture(request):
     if request.method == 'POST':
         if request.user.profile_picture:
             try:
-                # Delete the file from storage (works for both local and Cloudinary)
-                request.user.profile_picture.delete(save=False)
+                # Delete from Cloudinary
+                import cloudinary.uploader
+                if hasattr(request.user.profile_picture, 'public_id'):
+                    cloudinary.uploader.destroy(request.user.profile_picture.public_id)
             except Exception:
                 pass  # Ignore errors during deletion
             # Clear the field in the database
@@ -154,11 +161,12 @@ def delete_account(request):
     if request.method == 'POST':
         user = request.user
 
-        # Delete profile picture file if exists
+        # Delete profile picture from Cloudinary if exists
         if user.profile_picture:
             try:
-                # Delete the file from storage (works for both local and Cloudinary)
-                user.profile_picture.delete(save=False)
+                import cloudinary.uploader
+                if hasattr(user.profile_picture, 'public_id'):
+                    cloudinary.uploader.destroy(user.profile_picture.public_id)
             except Exception:
                 pass  # Ignore errors during deletion
 
