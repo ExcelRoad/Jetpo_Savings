@@ -19,7 +19,20 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(del nul 2)",
-      "Bash(NUL)"
+      "Bash(NUL)",
+      "Bash(git rm:*)",
+      "Bash(npm install:*)",
+      "Bash(railway login:*)",
+      "Bash(accountsmanagement__init__.py)",
+      "Bash(accountsmanagementcommands__init__.py)",
+      "Bash(echo:*)",
+      "Bash(accountsmanagement__init__.py 2)",
+      "Bash(accountsmanagementcommands__init__.py 2)",
+      "Bash(del accountsmanagement__init__.py nul 2)",
+      "Bash(railway status:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway link:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []

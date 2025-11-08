@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from cloudinary.models import CloudinaryField
 from PIL import Image
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -92,9 +93,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(_('last login'), blank=True, null=True)
 
     # Profile fields (extensible)
-    profile_picture = models.ImageField(
-        _('profile picture'),
-        upload_to='profile_pictures/',
+    profile_picture = CloudinaryField(
+        'profile_picture',
+        folder='profile_pictures',
         blank=True,
         null=True
     )
@@ -148,31 +149,5 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Check if user is a financial advisor."""
         return self.user_type == self.UserType.ADVISOR
 
-    def save(self, *args, **kwargs):
-        """
-        Override save method to resize profile picture before saving.
-        Only processes images when using local file storage (not Cloudinary).
-        """
-        super().save(*args, **kwargs)
-
-        # Only process images if using local file storage
-        # Cloudinary handles transformations via URL parameters
-        if self.profile_picture and hasattr(self.profile_picture, 'path'):
-            try:
-                img = Image.open(self.profile_picture.path)
-
-                # Convert RGBA to RGB if necessary
-                if img.mode in ('RGBA', 'LA', 'P'):
-                    background = Image.new('RGB', img.size, (255, 255, 255))
-                    background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                    img = background
-
-                # Resize to 400x400 while maintaining aspect ratio
-                output_size = (400, 400)
-                img.thumbnail(output_size, Image.Resampling.LANCZOS)
-
-                # Save the resized image
-                img.save(self.profile_picture.path, quality=95, optimize=True)
-            except (AttributeError, IOError):
-                # If path doesn't exist (Cloudinary) or file can't be opened, skip processing
-                pass
+    # CloudinaryField handles all image processing automatically
+    # No need for custom save method

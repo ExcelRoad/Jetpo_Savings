@@ -207,29 +207,24 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME', default=''),
+    api_key=config('CLOUDINARY_API_KEY', default=''),
+    api_secret=config('CLOUDINARY_API_SECRET', default=''),
+    secure=True
+)
+
+# django-cloudinary-storage settings
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': config('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
-    'RESOURCE_TYPE': 'image',  # Ensures /image/upload/ in URL
-    'PREFIX': '',  # No additional prefix
 }
 
-# Configure cloudinary library
-if CLOUDINARY_STORAGE['CLOUD_NAME']:
-    cloudinary.config(
-        cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
-        api_key=CLOUDINARY_STORAGE['API_KEY'],
-        api_secret=CLOUDINARY_STORAGE['API_SECRET'],
-        secure=True
-    )
-
-# Use Cloudinary ONLY for media files (user uploads), NOT for static files (CSS/JS)
-# Static files are handled by WhiteNoise
-if CLOUDINARY_STORAGE['CLOUD_NAME']:
+# Use Cloudinary for media files
+if config('CLOUDINARY_CLOUD_NAME', default=''):
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    # MEDIA_URL with /image/upload/ resource type path
-    MEDIA_URL = f'https://res.cloudinary.com/{CLOUDINARY_STORAGE["CLOUD_NAME"]}/image/upload/'
 else:
     # Local development: use file system storage
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
