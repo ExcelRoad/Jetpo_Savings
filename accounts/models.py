@@ -151,21 +151,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         """
         Override save method to resize profile picture before saving.
+        Only processes images when using local file storage (not Cloudinary).
         """
         super().save(*args, **kwargs)
 
-        if self.profile_picture:
-            img = Image.open(self.profile_picture.path)
+        # Only process images if using local file storage
+        # Cloudinary handles transformations via URL parameters
+        if self.profile_picture and hasattr(self.profile_picture, 'path'):
+            try:
+                img = Image.open(self.profile_picture.path)
 
-            # Convert RGBA to RGB if necessary
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
+                # Convert RGBA to RGB if necessary
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                    img = background
 
-            # Resize to 400x400 while maintaining aspect ratio
-            output_size = (400, 400)
-            img.thumbnail(output_size, Image.Resampling.LANCZOS)
+                # Resize to 400x400 while maintaining aspect ratio
+                output_size = (400, 400)
+                img.thumbnail(output_size, Image.Resampling.LANCZOS)
 
-            # Save the resized image
-            img.save(self.profile_picture.path, quality=95, optimize=True)
+                # Save the resized image
+                img.save(self.profile_picture.path, quality=95, optimize=True)
+            except (AttributeError, IOError):
+                # If path doesn't exist (Cloudinary) or file can't be opened, skip processing
+                pass
