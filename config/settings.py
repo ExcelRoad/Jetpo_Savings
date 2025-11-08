@@ -55,16 +55,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-
-    # Cloudinary must come BEFORE staticfiles
-    'cloudinary_storage',
-    'cloudinary',
-
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
 
     # Third-party apps
+    'cloudinary_storage',
+    'cloudinary',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -209,18 +206,22 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary configuration
+# Cloudinary configuration (MEDIA files only, NOT static files)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': config('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
 }
 
-# Use Cloudinary if credentials are provided, otherwise use local storage
+# Use Cloudinary ONLY for media files (user uploads), NOT for static files (CSS/JS)
+# Static files are handled by WhiteNoise
 if CLOUDINARY_STORAGE['CLOUD_NAME']:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # Ensure MEDIA_URL points to Cloudinary
+    MEDIA_URL = '/media/'
 else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
