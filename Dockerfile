@@ -28,11 +28,8 @@ RUN npm install
 # Copy project
 COPY . .
 
-# Make startup script executable
-RUN chmod +x start.sh
-
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Run startup script
-CMD ["./start.sh"]
+# Run migrations and start server
+CMD ["sh", "-c", "echo 'Running migrations...' && python manage.py migrate --noinput && echo 'Starting Gunicorn...' && exec gunicorn config.wsgi --log-file - --log-level info --bind 0.0.0.0:$PORT"]
