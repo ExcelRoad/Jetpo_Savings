@@ -11,7 +11,15 @@
       "Bash(git diff:*)",
       "Bash(pip install:*)",
       "Bash(del CSS_FIX_COMPLETE.md HEBREW_RTL_CONVERSION.md MINIMAL_DESIGN_UPDATE.md GEMELNET_SYNC_GUIDE.md PROJECT_STATUS.md NEXT_STEPS.md)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(dir /s /b .env 2)",
+      "Bash(nul)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(del nul 2)",
+      "Bash(NUL)"
     ],
     "deny": [],
     "ask": []
