@@ -17,14 +17,23 @@ def check_config(request):
     """Simple diagnostic view to check configuration."""
     from django.conf import settings
     from decouple import config
+    from django.contrib.auth import get_user_model
 
     info = {
         'DEBUG': settings.DEBUG,
         'CLOUDINARY_CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default='NOT SET'),
         'CLOUDINARY_API_KEY': config('CLOUDINARY_API_KEY', default='NOT SET')[:10] + '...' if config('CLOUDINARY_API_KEY', default='') else 'NOT SET',
         'DEFAULT_FILE_STORAGE': settings.DEFAULT_FILE_STORAGE,
-        'MEDIA_URL': settings.MEDIA_URL,
+        'MEDIA_URL': getattr(settings, 'MEDIA_URL', 'NOT SET'),
     }
+
+    # Test actual image URL generation
+    User = get_user_model()
+    test_user = User.objects.filter(profile_picture__isnull=False).first()
+    if test_user and test_user.profile_picture:
+        info['SAMPLE_IMAGE_URL'] = test_user.profile_picture.url
+    else:
+        info['SAMPLE_IMAGE_URL'] = 'No user with profile picture found'
 
     html = f"""
     <!DOCTYPE html>
