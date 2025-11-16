@@ -6,6 +6,7 @@ from django.db import models
 from .models import Portfolio, PortfolioHolding, PeriodicContribution
 from .forms import PortfolioForm, PortfolioHoldingForm, PeriodicContributionForm
 from funds.models import Fund, Company
+import json
 
 
 @login_required
@@ -60,12 +61,33 @@ def portfolio_detail(request, pk):
         holding__portfolio=portfolio
     ).select_related('holding', 'holding__fund').order_by('-created_at')
 
+    # Prepare data for gains chart
+    gains_chart_data = []
+    if holdings:
+        for holding in holdings:
+            fund_name = holding.fund.name
+            # Truncate long fund names for better display
+            if len(fund_name) > 30:
+                fund_name = fund_name[:27] + '...'
+
+            investment_amount = float(holding.amount)
+            # Calculate projected annual gain based on return rate
+            annual_gain = investment_amount * (float(holding.fund.return_rate or 0) / 100)
+
+            gains_chart_data.append({
+                'fund_name': fund_name,
+                'investment': investment_amount,
+                'annual_gain': annual_gain,
+                'return_rate': float(holding.fund.return_rate or 0),
+            })
+
     return render(request, 'portfolios/portfolio_detail.html', {
         'portfolio': portfolio,
         'holdings': holdings,
         'pending_funds': pending_funds,
         'category_distribution': category_percentages,
         'contributions': contributions,
+        'gains_chart_data': json.dumps(gains_chart_data),
     })
 
 
