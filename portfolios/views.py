@@ -61,24 +61,53 @@ def portfolio_detail(request, pk):
         holding__portfolio=portfolio
     ).select_related('holding', 'holding__fund').order_by('-created_at')
 
-    # Prepare data for gains chart
+    # Prepare data for gains chart - aggregate portfolio gains over time from snapshots
     gains_chart_data = []
     if holdings:
-        for holding in holdings:
-            fund_name = holding.fund.name
-            # Truncate long fund names for better display
-            if len(fund_name) > 30:
-                fund_name = fund_name[:27] + '...'
+        from funds.models import FundSnapshot
+        from collections import defaultdict
 
-            investment_amount = float(holding.amount)
-            # Calculate projected annual gain based on return rate
-            annual_gain = investment_amount * (float(holding.fund.return_rate or 0) / 100)
+        # Get all snapshot periods across all funds in portfolio
+        fund_ids = [holding.fund.id for holding in holdings]
+        snapshots = FundSnapshot.objects.filter(
+            fund_id__in=fund_ids
+        ).values('report_period', 'fund_id', 'avg_annual_return_5yr').order_by('report_period')
+
+        # Group snapshots by period
+        period_data = defaultdict(dict)
+        for snapshot in snapshots:
+            period = snapshot['report_period']
+            fund_id = snapshot['fund_id']
+            return_rate = snapshot['avg_annual_return_5yr']
+            period_data[period][fund_id] = return_rate
+
+        # Calculate total portfolio gains for each period
+        for period in sorted(period_data.keys()):
+            total_value = 0
+            total_gains = 0
+
+            for holding in holdings:
+                investment = float(holding.amount)
+                # Get return rate for this fund in this period
+                return_rate = period_data[period].get(holding.fund.id)
+
+                if return_rate is not None:
+                    # Calculate value with gains
+                    gain = investment * (float(return_rate) / 100)
+                    total_value += investment + gain
+                    total_gains += gain
+                else:
+                    # If no data for this fund in this period, just add investment
+                    total_value += investment
+
+            # Convert period to readable format (YYYYMM -> MM/YYYY)
+            period_str = str(period)
+            period_label = f"{period_str[4:6]}/{period_str[:4]}"
 
             gains_chart_data.append({
-                'fund_name': fund_name,
-                'investment': investment_amount,
-                'annual_gain': annual_gain,
-                'return_rate': float(holding.fund.return_rate or 0),
+                'period': period_label,
+                'total_value': round(total_value, 2),
+                'total_gains': round(total_gains, 2),
             })
 
     return render(request, 'portfolios/portfolio_detail.html', {
