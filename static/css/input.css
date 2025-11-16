@@ -43,9 +43,9 @@
   }
 
   /* Alert animations */
-  @keyframes slideInDown {
+  @keyframes slideInUp {
     from {
-      transform: translateY(-100%);
+      transform: translateY(100%);
       opacity: 0;
     }
     to {
@@ -54,22 +54,24 @@
     }
   }
 
-  @keyframes fadeOut {
+  @keyframes slideDown {
     from {
+      transform: translateY(0);
       opacity: 1;
     }
     to {
+      transform: translateY(100%);
       opacity: 0;
     }
   }
 
   .alert {
     @apply flex items-center gap-3 px-4 py-3 rounded-lg border shadow-sm z-50;
-    animation: slideInDown 0.3s ease-out;
+    animation: slideInUp 0.3s ease-out;
   }
 
-  .alert.fade-out {
-    animation: fadeOut 0.5s ease-out forwards;
+  .alert.slide-out {
+    animation: slideDown 0.5s ease-out forwards;
   }
 
   .alert-success {
