@@ -224,7 +224,7 @@
 
     <!-- Alert Messages with auto-fade -->
     {% if messages %}
-    <div class="fixed top-4 left-1/2 transform -translate-x-1/3 z-50 w-full max-w-md px-4" id="alertContainer">
+    <div class="fixed bottom-4 left-4 z-50 w-full max-w-md px-4" id="alertContainer">
         {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} mb-2" data-alert>
             <!-- Icon -->
@@ -292,11 +292,11 @@
             const alerts = document.querySelectorAll('[data-alert]');
             alerts.forEach(alert => {
                 setTimeout(() => {
-                    alert.classList.add('fade-out');
+                    alert.classList.add('slide-out');
                     setTimeout(() => {
                         alert.remove();
                     }, 500);
-                }, 4000);
+                }, 3000);
             });
         });
 
